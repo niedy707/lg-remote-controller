@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>LG Remote</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#07070d">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LG Remote">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* Kumanda: cam dili (liquid glass) styles.css'teki ortak değişkenlerden. Yazı tipi sistemin (dış istek yok).
+     Sayfa ekrana sabit; yalnız favori kanal listesi kayar. */
+  html:has(body.tv-sayfa), body.tv-sayfa { height: 100%; }
+  body.tv-sayfa { height: 100vh; height: 100dvh; overflow: hidden; padding: 0; margin: 0; }
+  .tv-kap { box-sizing: border-box; height: 100%; max-width: 460px; margin: 0 auto; display: flex; flex-direction: column;
+    padding: calc(10px + env(safe-area-inset-top)) 16px calc(8px + env(safe-area-inset-bottom)); }
+  .tv-ust, .ust-blok, .gd-bant, .gd-sonuc, .bolum-baslik, .kumanda { flex: none; }
+  #sayfaKumanda { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [hidden] { display: none !important; }   /* display:flex/grid `hidden`ı ezmesin */
+
+  /* Liquid glass, bütün arayüzde ve menülerde: yarı saydam yüzey, bulanıklık + doygunluk, üst kenar ışığı,
+     alt derinlik, ince çerçeve. */
+  .tus { appearance: none; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--text);
+    box-shadow: var(--lg-edge-soft), var(--lg-depth), var(--lg-rim);
+    -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+    border-radius: var(--r-md); min-height: 44px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+  .tus:active, .tus.basildi, .kanal-btn:active { transform: scale(0.96); background: var(--accent-dim); }
+  .tus:disabled { opacity: .5; cursor: default; }
+
+  /* ── en üst: kaynak geçişi (sol) + TV seçimi ── */
+  .tv-ust { display: grid; grid-template-columns: auto minmax(0, 1fr) 54px; gap: 8px; align-items: stretch; margin-bottom: 12px; }
+  .tus.program-dugme { min-height: 0; padding: 2px 0; border-radius: 16px; flex-direction: column; gap: 0; font-size: 17px; line-height: 1.05; }
+  .tus.program-dugme small { font-size: 9.5px; font-weight: 700; color: var(--sub); }
+  .tus.giris { flex-direction: column; gap: 0; border-radius: 999px; padding: 4px 12px; min-height: 0; line-height: 1.15; min-width: 98px; }
+  .tus.giris .ne { font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .tus.giris .alt { font-size: 10.5px; font-weight: 500; color: var(--sub); white-space: nowrap; }
+  .tus.giris.canli { border-color: rgba(88,201,251,.5); }
+  .tus.giris.apple { border-color: rgba(255,255,255,.35); }
+  /* Kaynak menüsü: sola hizalı, içeriği kadar */
+  #kaynakPop { right: auto; width: max-content; min-width: 210px; padding: 8px; }
+  .menu-liste .tus.secik { border-color: var(--accent); background: var(--accent-dim); }
+  .ks { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 22px; border-radius: 6px; margin-right: 10px;
+    font-size: 12px; font-weight: 800; letter-spacing: -.02em; flex: none; }
+  .ks.canli { font-size: 15px; }
+  .ks.apple { background: #fff; color: #000; font-size: 13px; }
+  .ks.netflix { background: #000; color: #e50914; font-size: 17px; font-family: Georgia, serif; }
+  .ks.prime { background: #00a8e1; color: #fff; font-size: 9.5px; }
+  .ks.disney { background: #0e1a5c; color: #fff; }
+
+  /* ── uygulama kumandası (favorilerin yerine) ── */
+  .uyg-kumanda { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 14px; margin-bottom: 8px; }
+  .uyg-kumanda[hidden], .uygulama-modu #favoriBaslik, .uygulama-modu .liste-kap { display: none; }
+  .uyg-kumanda .bolum-baslik { margin-bottom: 0; text-transform: none; letter-spacing: 0; font-size: 13px; }   /* "NETFLİX" olmasın */
+  .dpad { display: grid; grid-template-columns: repeat(3, 76px); grid-template-rows: repeat(3, 62px); gap: 8px; justify-content: center; }
+  .dpad .tus { font-size: 20px; }
+  .dpad .yukari { grid-column: 2; grid-row: 1; }
+  .dpad .sol { grid-column: 1; grid-row: 2; }
+  .dpad .ok { grid-column: 2; grid-row: 2; border-radius: 50%; font-size: 17px; font-weight: 800; border-color: rgba(88,201,251,.5); }
+  .dpad .sag { grid-column: 3; grid-row: 2; }
+  .dpad .asagi { grid-column: 2; grid-row: 3; }
+  .metin-satir { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+  .metin-satir[hidden] { display: none; }
+  .metin-satir input { min-width: 0; height: 44px; box-sizing: border-box; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(255,255,255,.06);
+    color: var(--text); font: inherit; font-size: 16px; padding: 0 12px; }   /* 16 px: iPhone odaklanınca yakınlaştırmasın */
+  .metin-satir .tus { padding: 0 14px; }
+  .medya-satir { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .medya-satir .tus { flex-direction: column; gap: 2px; min-height: 52px; font-size: 18px; padding: 3px 0; }
+  .medya-satir .tus small { font-size: 10px; font-weight: 600; color: var(--sub); }
+  .tv-secici { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; min-width: 0;
+    background: var(--lg-surface); border: 1px solid var(--glass-border); box-shadow: var(--lg-edge), var(--lg-depth), var(--lg-rim);
+    -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+  .tv-secici button { appearance: none; border: 0; border-radius: 999px; padding: 8px 4px; font: inherit; font-size: 13px; font-weight: 600; min-width: 0;
+    color: var(--sub); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; touch-action: manipulation;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tv-secici button.secili { color: #07070d; background: linear-gradient(180deg, #7fd6fc, var(--accent)); box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+  .nokta { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+  .nokta.acik { background: var(--accent2); box-shadow: 0 0 8px rgba(111,208,122,0.7); }
+  .tv-secici button.secili .nokta.acik { background: #0b5d1e; box-shadow: none; }
+
+  /* ── önizleme + sağ sütun (⏻ · 🔇 · Ekran · Ch / Vol) ── */
+  .ust-blok { position: relative; z-index: 5; display: grid; grid-template-columns: 1fr 58px; gap: 8px; margin-bottom: 10px; }
+  .onizleme { position: relative; border-radius: var(--r-md); overflow: hidden; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--glass-border); }
+  .onizleme img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .25s var(--ease); }
+  .onizleme img.yukleniyor { opacity: .55; }
+  .onizleme img:not([src]) { visibility: hidden; }
+  .onizleme .bos { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--sub); font-size: 13px; padding: 12px; }
+  .onizleme .serit { position: absolute; left: 6px; bottom: 6px; right: 6px; font-size: 11.5px; font-weight: 600; color: #fff;
+    background: rgba(0,0,0,.55); padding: 5px 9px; border-radius: 999px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .onizleme .serit:empty { display: none; }
+  .sag-sutun { display: grid; grid-template-rows: repeat(4, 1fr); gap: 5px; }
+  .sag-sutun .tus { min-height: 0; border-radius: 14px; font-size: 18px; padding: 0; flex-direction: column; gap: 0; line-height: 1.05; }
+  .sag-sutun .tus small { font-size: 9.5px; font-weight: 700; color: var(--sub); letter-spacing: .02em; }
+  .sag-sutun .tus.chvol small { font-size: 11px; color: inherit; }
+  .tus.guc.kapat { color: var(--danger); }
+  .tus.guc.ac { color: var(--accent2); }
+  .tus.ekran-kapali { background: rgba(255,255,255,.18); }
+  .tus[aria-expanded="true"] { background: var(--accent-dim); border-color: rgba(88,201,251,.6); }
+
+  /* açılır pencereler (Ch / Vol · Geri dön · Mesaj): dışarıya dokununca kapanır */
+  /* Açılır pencere açıkken arkadaki görünmez perde (dışarıya dokunuş kapatır — iPhone'da düğme olmayan
+     yere dokunuş "click" üretmiyor). Pencerenin kabı perdenin üstüne çıkar. */
+  .onay-kap { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: rgba(0,0,0,.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .onay-kap[hidden] { display: none; }
+  .onay-kart { width: 100%; max-width: 340px; padding: 18px; border-radius: var(--r-lg); border: 1px solid rgba(255,255,255,.18);
+    background: linear-gradient(158deg, rgb(44,44,64) 0%, rgb(24,24,38) 55%, rgb(16,16,26) 100%); box-shadow: 0 18px 44px rgba(0,0,0,.5), var(--lg-edge); }
+  .onay-baslik { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .onay-metin { font-size: 13.5px; color: var(--sub); line-height: 1.4; margin-bottom: 16px; }
+  .onay-metin:empty { display: none; }
+  .onay-dugmeler { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .onay-dugmeler .tus.tehlike { background: rgba(229,57,53,.85); border-color: rgba(229,57,53,.9); color: #fff; }
+  .pop-perde { position: fixed; inset: 0; z-index: 20; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: none; }
+  .tv-ust { position: relative; z-index: 7; }
+  .tv-ust.pop-ustte, .ust-blok.pop-ustte, .kumanda.pop-ustte { z-index: 25; pointer-events: none; }
+  /* Kabın yalnız açık pencere ve onu açan düğme dokunulabilir; gerisi (boşluk, öteki tuşlar) perdeye düşer. */
+  .pop-ustte .pop:not([hidden]), .pop-ustte [data-pop] { pointer-events: auto; }
+  .pop { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 30; padding: 12px; border-radius: var(--r-lg);
+    /* Okunaklılık: zemin tam opak — arkadaki parlak logolar %3 saydamlıkta bile seçiliyordu. Cam görünümü
+       kenar ışığı ve gölgeyle kalır. */
+    background: linear-gradient(158deg, rgb(44,44,64) 0%, rgb(24,24,38) 55%, rgb(16,16,26) 100%);
+    border: 1px solid rgba(255,255,255,.18); box-shadow: var(--lg-drop), 0 18px 44px rgba(0,0,0,.42), var(--lg-edge), var(--lg-rim);
+    -webkit-backdrop-filter: blur(30px) saturate(190%) brightness(1.05); backdrop-filter: blur(30px) saturate(190%) brightness(1.05); }
+  .pop.ustte { top: 0; right: 66px; }
+  /* Ch / Vol penceresi önizlemenin altında (önizlemeyi kapatmaz), favori listesinin üstünde: %60 opak;
+     arkadaki yazılar karışmasın diye bulanık */
+  #chvolPop { background: linear-gradient(158deg, rgba(44,44,64,.6) 0%, rgba(24,24,38,.6) 55%, rgba(16,16,26,.6) 100%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%); backdrop-filter: blur(14px) saturate(140%); }
+  .pop-baslik { font-size: 12px; font-weight: 700; color: var(--sub); margin: 0 2px 8px; }
+  .rockerlar { display: grid; grid-template-columns: 1fr 1fr 58px; gap: 12px; }
+  /* Ses düzeyi şeridi (göreli: yukarı kaydırma artırır, aşağı azaltır) */
+  .ses-serit { position: relative; overflow: hidden; border-radius: 26px; min-height: 150px; touch-action: none; cursor: ns-resize;
+    background: rgba(255,255,255,.05); border: 1px solid var(--glass-border); -webkit-user-select: none; user-select: none; }
+  .ses-dolu { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(0deg, var(--accent), #9be0ff);
+    transition: height .12s var(--ease); }
+  .ses-deger { position: absolute; top: 8px; left: 0; right: 0; text-align: center; font-size: 15px; font-weight: 800; pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+  .ses-serit.kapali { opacity: .4; cursor: not-allowed; }
+  .rocker { display: grid; grid-template-rows: 46px auto 46px; gap: 3px; border-radius: 26px; padding: 4px; background: rgba(255,255,255,0.04); border: 1px solid var(--glass-border); }
+  .rocker .tus { border-radius: 22px; min-height: 0; font-size: 22px; border-color: transparent; }
+  .rocker .etiket { text-align: center; font-size: 10.5px; color: var(--sub); font-weight: 700; letter-spacing: .08em; }
+  .cipler { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cip { appearance: none; border: 1px solid var(--glass-border); background: var(--lg-surface); box-shadow: var(--lg-edge-soft), var(--lg-rim); color: var(--text); border-radius: 999px;
+    padding: 8px 12px; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; touch-action: manipulation; }
+  .cip.secik { background: linear-gradient(180deg, #7fd6fc, var(--accent)); color: #07070d; border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.55); }
+  .cip:disabled { opacity: .45; }
+  .pop textarea { width: 100%; box-sizing: border-box; resize: none; height: 64px; border-radius: 12px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,.07); box-shadow: inset 0 1px 3px rgba(0,0,0,.25); color: var(--text); font: inherit; font-size: 15px; padding: 8px 10px; margin-bottom: 8px; }
+  .pop .alt-satir { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+  .pop .not { font-size: 11.5px; color: var(--sub); }
+  .tus.gonder { background: linear-gradient(180deg, #7fd6fc, var(--accent)); color: #07070d; border: 0; padding: 0 18px; border-radius: 999px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 6px 18px rgba(88,201,251,.25); }
+
+  /* ── araçlar: Geri dön · Mesaj · Canlı ── */
+  .gd-bant { display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 12px; margin-bottom: 10px; border-radius: var(--r-md);
+    background: linear-gradient(158deg, rgba(88,201,251,.20), rgba(88,201,251,.08)); border: 1px solid rgba(88,201,251,.45);
+    box-shadow: var(--lg-edge), var(--lg-depth); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+  .gd-bant .bilgi { flex: 1; min-width: 0; font-size: 12px; line-height: 1.25; color: var(--sub); }
+  .gd-bant .bilgi b { display: block; color: var(--text); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gd-bant .kalan { font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 700; color: var(--text); }
+  .gd-bant .tus { min-height: 34px; padding: 0 9px; font-size: 12px; border-radius: 999px; }
+  .gd-sonuc { font-size: 12px; color: var(--sub); margin: -4px 4px 10px; }
+
+  /* ── kanallar: alt alta satırlar — solda logo, ortada şu anki yayın (uzunsa
+        kayar), sağda saat aralığı (logo ve saat sabit); altta ince ilerleme çizgisi ── */
+  .bolum-baslik { font-size: 12px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .06em; margin: 4px 4px 8px; }
+  /* Kayan tek alan: favori kanallar ve ızgara. Menü ve renk tuşları altta sabit. */
+  .liste-kap { flex: 1 1 auto; min-height: 100px; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    margin: 0 -4px 8px; padding: 2px 4px 4px; }
+  .favoriler { display: flex; flex-direction: column; gap: 5px; }
+  .favoriler > .kanal-btn { flex: none; }
+  .kanal-btn { appearance: none; position: relative; overflow: hidden; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--text);
+    box-shadow: var(--lg-edge-soft), var(--lg-depth), var(--lg-rim); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+    border-radius: var(--r-md); padding: 0 12px 0 8px; font: inherit; cursor: pointer;
+    display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 44px; touch-action: manipulation; text-align: left;
+    -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* basılı tutunca iPhone menüsü/seçim çıkmasın */
+  /* Küçük boylar, satırlar sığsın: 21 px logo, 10,8 px program, 9,6 px saat */
+  .kanal-btn .logo-kutu { height: 21px; display: flex; align-items: center; justify-content: center; }
+  .kanal-btn .logo { max-height: 21px; max-width: 46px; object-fit: contain; }
+  .kanal-btn .logo-ad { font-size: 9.6px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .kanal-btn .prog { overflow: hidden; white-space: nowrap; font-size: 10.8px; font-weight: 600; color: #a9cdf5; }
+  .kanal-btn .prog.bos { color: var(--sub); font-weight: 500; }
+  .kanal-btn .prog > span { display: inline-block; padding-right: 2px; }
+  .kanal-btn .prog.kayan > span { animation: kay var(--kay-sure, 8s) ease-in-out infinite alternate; }
+  @keyframes kay { 0%, 18% { transform: translateX(0); } 82%, 100% { transform: translateX(var(--kay, 0px)); } }
+  @media (prefers-reduced-motion: reduce) { .kanal-btn .prog.kayan > span { animation: none; } .kanal-btn .prog { text-overflow: ellipsis; } }
+  .kanal-btn .saat { font-size: 9.6px; color: var(--sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .kanal-btn .cubuk { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.08); }
+  .kanal-btn .cubuk i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .6s var(--ease); }
+  /* Açık olan kanal: bütün satır açık yeşil. */
+  .kanal-btn.aktif { background: rgba(111,208,122,.24); border-color: rgba(111,208,122,.75); box-shadow: 0 0 0 1px rgba(111,208,122,.55) inset, var(--lg-depth); }
+  .kanal-btn.aktif .prog { color: #e3f7e6; }
+  .kanal-btn.aktif .saat { color: #c3e8c9; }
+  .kanal-btn.aktif .cubuk i { background: var(--accent2); }
+  .uyari-not { font-size: 12px; color: var(--warn); margin: 6px 4px 0; }
+  /* Diğer sık kullanılan kanallar: yalnız logo, ızgara */
+  .bolum-baslik.ic { margin-top: 16px; }
+  .izgara { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .izgara .kanal-btn { display: flex; align-items: center; justify-content: center; padding: 0 6px; }
+  .izgara .kanal-btn .logo { max-height: 21px; max-width: 80%; }
+  .izgara .kanal-btn .logo-ad { font-size: 8.8px; }
+
+  /* ── alt: menü satırı + renk tuşları ── */
+  .kumanda { position: relative; z-index: 6; padding: 12px; border-radius: var(--r-lg); display: flex; flex-direction: column; gap: 10px; margin-bottom: 0; }
+  .pop.altta { top: auto; bottom: calc(100% + 8px); }
+  #elPop { left: auto; right: 0; width: max-content; min-width: 230px; padding: 8px; }
+  .menu-liste { display: flex; flex-direction: column; gap: 6px; }
+  /* Dakika tekerleği (iPhone alarmındaki gibi): kaydırınca ortadaki değer seçilir */
+  .teker-kap { position: relative; height: 180px; margin: 4px 0 10px; }
+  .teker { height: 100%; overflow-y: scroll; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    padding: 72px 0; box-sizing: border-box; text-align: center;
+    -webkit-mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent); mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent); }
+  .teker::-webkit-scrollbar { display: none; }
+  .teker div { height: 36px; line-height: 36px; scroll-snap-align: center; font-size: 20px; font-weight: 600; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .teker div.secik { color: var(--text); font-size: 24px; font-weight: 700; }
+  .teker-kap::before { content: ''; position: absolute; left: 0; right: 0; top: 72px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,.08); pointer-events: none; }
+  .teker-birim { position: absolute; top: 72px; left: calc(50% + 34px); line-height: 36px; font-size: 15px; font-weight: 600; color: var(--sub); pointer-events: none; z-index: 1; }
+  .tus.genis { width: 100%; min-height: 46px; margin-top: 10px; }
+  /* Kanal penceresi: ekranın altında, perdenin üstünde */
+  .pop.kanal-pop { position: fixed; top: auto; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom)); max-width: 460px; margin: 0 auto; }
+  .kp-ust { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .kp-ust .logo-kutu { width: 58px; height: 34px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .kp-ust .logo { max-width: 58px; max-height: 32px; object-fit: contain; }
+  .kp-yazi { min-width: 0; }
+  .kp-ad { font-size: 16px; font-weight: 700; }
+  .kp-prog { font-size: 12.5px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tus.kp-akis { width: 100%; justify-content: flex-start; padding: 0 14px; margin-bottom: 8px; font-size: 14px; }
+  /* Ayarlar penceresi: üstte dokunmatik yüzey (Magic Remote imleci), altında yön tuşları */
+  .dokunmatik { height: 150px; border-radius: 16px; margin-bottom: 12px; touch-action: none; cursor: crosshair;
+    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.10), rgba(255,255,255,.03) 70%); border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.12), inset 0 -10px 24px rgba(0,0,0,.25);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+  .dokunmatik span { font-size: 11px; color: var(--sub); pointer-events: none; }
+  .dokunmatik.basili { background: radial-gradient(circle at 50% 40%, rgba(88,201,251,.18), rgba(255,255,255,.03) 70%); }
+  .ayar-alt { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .kp-secenek { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .kp-secenek .tus { font-size: 13.5px; padding: 0 6px; }
+  .kp-secenek .tus.secik { border-color: var(--accent); background: var(--accent-dim); }
+  #kpSonra, #kpSaat { margin-top: 10px; }
+  .teker-cift { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+  .teker-cift .teker-kap { margin: 0; }
+  .iki-nokta { font-size: 24px; font-weight: 700; color: var(--sub); }
+  .menu-liste .tus { justify-content: flex-start; padding: 0 14px; font-size: 15px; background: rgba(255,255,255,.08); }
+  .menu-liste a.tus { text-decoration: none; }
+  .menu-liste form { margin: 0; }
+  .menu-satir { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .menu-satir .tus { flex-direction: column; gap: 2px; min-height: 48px; font-size: 17px; padding: 3px 0; }
+  .menu-satir .tus small { font-size: 10.5px; font-weight: 600; color: var(--sub); }
+  .renkler { display: grid; grid-template-columns: repeat(4, 1fr) 46px; gap: 8px; }
+  .renkler .tus.el { font-size: 20px; padding: 0; }
+  .renkler .tus { min-height: 32px; }
+  .renk { width: 26px; height: 8px; border-radius: 4px; }
+  /* Çıkış — 👋🏻 menüsünün son satırı (POST formu: başka bir site bağlantıyla çıkış yaptıramasın) */
+  .menu-liste .tv-geri { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 0 14px; border-radius: var(--r-md);
+    color: var(--sub); text-decoration: none; font: inherit; font-weight: 600; font-size: 15px; background: rgba(255,255,255,.05);
+    border: 0; cursor: pointer; text-align: left; }
+  #bildirimBtn b, #dilBtn b { font-weight: 700; margin-left: 4px; color: var(--sub); }
+  #bildirimBtn.acik b { color: var(--accent2); }
+
+  /* ── Program: yayın akışı ── */
+  /* İki satır, yatay kayar: solda favoriler, ince çizgiden sonra ızgaradaki kanallar */
+  .akis-kanallar { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 2px 2px 8px; margin: 0 -2px; }
+  .akis-grup { flex: none; display: grid; grid-template-rows: repeat(2, 40px); gap: 6px; }
+  .akis-grup + .akis-grup { border-left: 1px solid var(--glass-border); padding-left: 6px; }
+  .akis-cip { flex: none; width: 66px; height: 40px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--lg-surface); box-shadow: var(--lg-edge-soft), var(--lg-rim);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .akis-cip img { max-height: 24px; max-width: 54px; object-fit: contain; }
+  .akis-cip.secik { border-color: var(--accent); background: var(--accent-dim); }
+  .akis-gun { font-size: 11.5px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .05em; margin: 10px 2px 2px; }
+  .akis-satir { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--glass-border); }
+  .akis-satir .sa { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .akis-satir .ad { font-size: 13.5px; line-height: 1.25; }
+  .akis-satir.simdi .ad { color: #a9cdf5; font-weight: 600; }
+  .akis-satir .tus { min-height: 32px; padding: 0 10px; font-size: 12px; border-radius: 999px; white-space: nowrap; }
+  .akis-satir .tus.kurulu { background: rgba(111,208,122,.18); border-color: rgba(111,208,122,.55); color: var(--accent2); }
+
+  /* ── Program içeriği ── */
+  .prog-kart { padding: 14px; border-radius: var(--r-lg); margin-bottom: 14px; }
+  .prog-kart h2 { font-size: 15px; font-weight: 700; margin: 0 0 10px; }
+  .gorev { display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--glass-border); }
+  .gorev:first-child { border-top: 0; }
+  .gorev .ust { font-weight: 700; font-size: 14px; }
+  .gorev .alt { font-size: 12px; color: var(--sub); grid-column: 1; }
+  .gorev .eylemler { grid-row: 1 / span 2; grid-column: 2; display: flex; gap: 6px; align-items: center; }
+  .gorev.kapali { opacity: .55; }
+  .gorev .tus { min-height: 34px; padding: 0 10px; font-size: 12.5px; border-radius: 999px; }
+  .bos-not { font-size: 13px; color: var(--sub); padding: 6px 0; }
+  .form-satir { margin-bottom: 12px; }
+  .form-satir > label, .form-satir .etiket { display: block; font-size: 12px; font-weight: 700; color: var(--sub); margin: 0 2px 6px; }
+  .form-satir select, .form-satir input { width: 100%; box-sizing: border-box; border-radius: 12px; border: 1px solid var(--glass-border);
+    background: rgba(255,255,255,.07); box-shadow: inset 0 1px 3px rgba(0,0,0,.25); color: var(--text); font: inherit; font-size: 15px; padding: 10px 12px; }
+  .iki { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .gecmis-satir { font-size: 12.5px; padding: 6px 0; border-top: 1px solid var(--glass-border); color: var(--sub); }
+  .gecmis-satir:first-child { border-top: 0; }
+  .gecmis-satir b { color: var(--text); font-weight: 600; }
+
+  /* ── Program penceresi (tam ekran, ✕ ile kapanır) ── */
+  .sayfa-pop { position: fixed; inset: 0; z-index: 60; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: rgba(7,7,13,.58); -webkit-backdrop-filter: blur(34px) saturate(170%); backdrop-filter: blur(34px) saturate(170%); }
+  .sayfa-pop-ic { max-width: 460px; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom)); }
+  .sayfa-pop-ust { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 12px; }
+  .sayfa-pop-ust h2 { font-size: 19px; font-weight: 700; margin: 0; }
+  .kapat-x { appearance: none; border: 1px solid var(--glass-border); background: var(--lg-surface); box-shadow: var(--lg-edge), var(--lg-rim); color: var(--text);
+    width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+</style>
+</head>
+<body class="tv-sayfa">
+<div class="tv-kap">
+  <h1 class="sr">LG Remote</h1>
+  <header class="tv-ust">
+    <button type="button" class="tus giris" id="girisBtn" data-pop="kaynakPop" aria-expanded="false" aria-label="Kaynak seç">
+      <span class="ne" id="girisNe">—</span><span class="alt" id="girisAlt">kaynak ▾</span>
+    </button>
+    <!-- Kaynak menüsü: üstte o anki kaynak, basınca aşağı açılır -->
+    <div class="pop" id="kaynakPop" hidden>
+      <div class="menu-liste" id="kaynakListe">
+        <button type="button" class="tus" data-kaynak="canli"><span class="ks canli">📺</span>Canlı yayın</button>
+        <button type="button" class="tus" data-kaynak="apple"><span class="ks apple">tv</span>Apple TV</button>
+        <button type="button" class="tus" data-kaynak="netflix"><span class="ks netflix">N</span>Netflix</button>
+        <button type="button" class="tus" data-kaynak="prime"><span class="ks prime">prime</span>Amazon Prime</button>
+        <button type="button" class="tus" data-kaynak="disney"><span class="ks disney">D+</span>Disney+</button>
+      </div>
+    </div>
+    <nav class="tv-secici" id="tvSecici" aria-label="Televizyon seçimi">
+      <button type="button" disabled>yükleniyor…</button><button type="button" disabled></button>
+    </nav>
+    <button type="button" class="tus program-dugme" id="programBtn" aria-label="Program"><span>📅</span><small>Program</small></button>
+  </header>
+
+  <main id="sayfaKumanda">
+    <section class="ust-blok" aria-label="Önizleme ve ana tuşlar">
+      <div class="onizleme" id="onizleme">
+        <img id="ekranImg" alt="TV ekranının görüntüsü">
+        <div class="bos" id="ekranBos">Ekran görüntüsü yükleniyor…</div>
+        <div class="serit" id="durumSerit"></div>
+      </div>
+      <div class="sag-sutun">
+        <button type="button" class="tus guc kapat" data-eylem="guc" aria-label="TV'yi kapat">⏻</button>
+        <button type="button" class="tus" data-tus="MUTE" aria-label="Sessiz">🔇</button>
+        <button type="button" class="tus" id="ekranGucBtn" aria-label="Ekranı kapat (ses devam eder)"><span>🖥</span><small id="ekranGucYazi">kapat</small></button>
+        <button type="button" class="tus chvol" id="chvolBtn" data-pop="chvolPop" aria-expanded="false" aria-label="Kanal ve ses tuşları"><small>Ch /</small><small>Vol</small></button>
+      </div>
+      <!-- Önizlemenin altında, favori listesinin üstünde açılır (önizlemeyi kapatmasın) -->
+      <div class="pop" id="chvolPop" hidden>
+        <div class="rockerlar">
+          <div class="rocker">
+            <button type="button" class="tus" data-tus="CHANNELUP" aria-label="Sonraki kanal">＋</button>
+            <div class="etiket">KANAL</div>
+            <button type="button" class="tus" data-tus="CHANNELDOWN" aria-label="Önceki kanal">－</button>
+          </div>
+          <div class="rocker">
+            <button type="button" class="tus" data-tus="VOLUMEUP" data-tekrar aria-label="Sesi aç">＋</button>
+            <div class="etiket">SES</div>
+            <button type="button" class="tus" data-tus="VOLUMEDOWN" data-tekrar aria-label="Sesi kıs">－</button>
+          </div>
+          <!-- Ses düzeyi şeridi: altta 0, üstte 100; dokunulan yerden yukarı/aşağı kaydır -->
+          <div class="ses-serit kapali" id="sesSerit" role="slider" tabindex="0" aria-label="Ses düzeyi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="ses-dolu" id="sesDolu"></div>
+            <div class="ses-deger" id="sesDeger">–</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="gd-bant" id="gdBant" hidden>
+      <div class="bilgi"><b id="gdKanal">—</b><span class="kalan" id="gdKalan">0:00</span> sonra dönülecek</div>
+      <button type="button" class="tus" data-gd="uzat">+1 dk</button>
+      <button type="button" class="tus" data-gd="hemen">Şimdi</button>
+      <button type="button" class="tus" data-gd="sil">İptal</button>
+    </div>
+    <div class="gd-sonuc" id="gdSonuc" hidden></div>
+
+
+    <div class="bolum-baslik" id="favoriBaslik">Favori kanallar</div>
+    <!-- Uygulamadayken (Netflix, Apple TV…) favorilerin yerine -->
+    <section class="uyg-kumanda" id="uygKumanda" hidden aria-label="Uygulama kumandası">
+      <div class="bolum-baslik" id="uygBaslik">Uygulama kumandası</div>
+      <div class="dpad">
+        <button type="button" class="tus yukari" data-tus="UP" data-tekrar aria-label="Yukarı">▲</button>
+        <button type="button" class="tus sol" data-tus="LEFT" data-tekrar aria-label="Sol">◀</button>
+        <button type="button" class="tus ok" data-tus="ENTER" aria-label="Tamam">OK</button>
+        <button type="button" class="tus sag" data-tus="RIGHT" data-tekrar aria-label="Sağ">▶</button>
+        <button type="button" class="tus asagi" data-tus="DOWN" data-tekrar aria-label="Aşağı">▼</button>
+      </div>
+      <div class="medya-satir">
+        <button type="button" class="tus" data-tus="BACK" aria-label="Geri">↩<small>Geri</small></button>
+        <button type="button" class="tus" data-tus="REWIND" data-tekrar aria-label="Geri sar">⏪<small>Geri sar</small></button>
+        <button type="button" class="tus" data-tus="PLAY" aria-label="Oynat">▶<small>Oynat</small></button>
+        <button type="button" class="tus" data-tus="PAUSE" aria-label="Duraklat">⏸<small>Duraklat</small></button>
+        <button type="button" class="tus" data-tus="FASTFORWARD" data-tekrar aria-label="İleri sar">⏩<small>İleri sar</small></button>
+      </div>
+      <div class="metin-satir" id="uygMetin" hidden>
+        <input type="text" id="uygMetinGir" maxlength="100" placeholder="Arama kutusuna yaz…" autocomplete="off" enterkeyhint="send" aria-label="Apple TV'ye yazı">
+        <button type="button" class="tus" id="uygMetinGonder">Gönder</button>
+      </div>
+      <button type="button" class="tus genis" data-kaynak="canli">📺 Canlı yayına dön</button>
+    </section>
+    <div class="liste-kap">
+      <section class="favoriler" id="favoriler"></section>
+      <div class="uyari-not" id="favoriUyari" hidden></div>
+      <div class="bolum-baslik ic" id="digerBaslik" hidden>Diğer sık kullanılan kanallar</div>
+      <section class="izgara" id="digerKanallar"></section>
+    </div>
+
+    <section class="kumanda glass" aria-label="Menü tuşları">
+      <div class="menu-satir">
+        <button type="button" class="tus" data-tus="HOME" aria-label="Ana ekran">⌂<small>Ana</small></button>
+        <button type="button" class="tus" data-tus="INFO" aria-label="Bilgi">ⓘ<small>Bilgi</small></button>
+        <button type="button" class="tus" data-tus="BACK" aria-label="Geri">↩<small>Geri</small></button>
+        <button type="button" class="tus" id="ayarlarBtn" data-pop="ayarPop" aria-expanded="false" aria-label="Ayarlar">⚙︎<small>Ayarlar</small></button>
+        <button type="button" class="tus" data-tus="EXIT" aria-label="Çıkış">✕<small>Çıkış</small></button>
+      </div>
+      <div class="renkler">
+        <button type="button" class="tus" data-tus="RED" aria-label="Kırmızı"><span class="renk" style="background:#e53935"></span></button>
+        <button type="button" class="tus" data-tus="GREEN" aria-label="Yeşil"><span class="renk" style="background:#43a047"></span></button>
+        <button type="button" class="tus" data-tus="YELLOW" aria-label="Sarı"><span class="renk" style="background:#fdd835"></span></button>
+        <button type="button" class="tus" data-tus="BLUE" aria-label="Mavi"><span class="renk" style="background:#1e88e5"></span></button>
+        <button type="button" class="tus el" id="elBtn" data-pop="elPop" aria-expanded="false" aria-label="Diğer">👋🏻</button>
+      </div>
+      <div class="pop altta" id="elPop" hidden>
+        <div class="menu-liste">
+          <button type="button" class="tus" id="gdAc">⏱ Reklamdan sonra geri dön</button>
+          <button type="button" class="tus" id="mesajAc">💬 Ekrana mesaj gönder</button>
+          <button type="button" class="tus" id="bildirimBtn" hidden>🔔 Bildirimler: <b id="bildirimDurum">kapalı</b></button>
+          <a class="tus" href="/detail" id="izlemeAc">ℹ️ Detail</a>
+          <a class="tus" href="/engel" id="engelAc">🔒 Engeller ve kilit</a>
+          <button type="button" class="tus" id="dilBtn">🌐 Dil: <b id="dilDurum">Türkçe</b></button>
+          <form method="POST" action="/logout"><button type="submit" class="tv-geri" aria-label="Çıkış yap">🚪 Çıkış yap</button></form>
+        </div>
+      </div>
+      <div class="pop altta" id="gdPop" hidden>
+        <div class="pop-baslik">⏱ Reklamdan sonra geri dön</div>
+        <div class="pop-baslik" id="gdHedef" style="font-weight:500">Kaç dakika sonra bu kanala dönülsün?</div>
+        <div class="teker-kap"><div class="teker" id="gdTeker" aria-label="Dakika"></div><span class="teker-birim">dk</span></div>
+        <div class="cipler" id="gdCipler">
+          <button type="button" class="cip" data-dk="5">5 dk</button>
+          <button type="button" class="cip" data-dk="9">9 dk</button>
+          <button type="button" class="cip" data-dk="10">10 dk</button>
+          <button type="button" class="cip" data-dk="15">15 dk</button>
+        </div>
+        <button type="button" class="tus gonder genis" id="gdBaslat">Başlat</button>
+        <div class="not" style="font-size:11.5px;color:var(--sub);margin-top:8px">Dönmeden 1 dk ve 10 sn önce TV'de uyarı çıkar. Sayaç evdeki bilgisayarda çalışır; telefon kilitliyken de döner.</div>
+      </div>
+      <div class="pop altta" id="mesajPop" hidden>
+        <div class="pop-baslik">TV ekranına mesaj</div>
+        <textarea id="mesajMetin" maxlength="160" placeholder="Mesajı yaz ya da aşağıdan seç…"></textarea>
+        <div class="cipler" id="hazirMesajlar"></div>
+        <div class="alt-satir">
+          <div class="cipler" id="mesajSureler">
+            <button type="button" class="cip secik" data-sn="5">5 sn</button>
+            <button type="button" class="cip" data-sn="15">15 sn</button>
+            <button type="button" class="cip" data-sn="30">30 sn</button>
+            <button type="button" class="cip" data-sn="60">1 dk</button>
+          </div>
+          <button type="button" class="tus gonder" id="mesajGonder">Gönder</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+
+<div class="sayfa-pop" id="programPop" role="dialog" aria-modal="true" aria-label="Program" hidden>
+  <div class="sayfa-pop-ic">
+    <div class="sayfa-pop-ust"><h2>📅 Program</h2><button type="button" class="kapat-x" id="programKapat" aria-label="Kapat">✕</button></div>
+
+    <section class="prog-kart glass">
+      <h2>Yayın akışı · <span id="akisTv">—</span></h2>
+      <div class="akis-kanallar" id="akisKanallar"></div>
+      <div id="akisListe"><div class="bos-not">Yükleniyor…</div></div>
+    </section>
+    <section class="prog-kart glass">
+      <h2>Yaklaşanlar</h2>
+      <div id="progListe"><div class="bos-not">Yükleniyor…</div></div>
+    </section>
+
+    <section class="prog-kart glass">
+      <h2>Yeni program</h2>
+      <div class="form-satir iki">
+        <div><label for="pTv">TV</label><select id="pTv"></select></div>
+        <div><label for="pKanal">Kanal</label><select id="pKanal"></select></div>
+      </div>
+      <div class="form-satir">
+        <span class="etiket">Ne zaman</span>
+        <div class="cipler" id="pTur">
+          <button type="button" class="cip secik" data-tur="tek">Bir kez</button>
+          <button type="button" class="cip" data-tur="haftalik">Tekrarla</button>
+        </div>
+      </div>
+      <div class="form-satir iki">
+        <div id="pTarihKutu"><label for="pTarih">Tarih</label><input type="date" id="pTarih"></div>
+        <div><label for="pSaat">Saat</label><input type="time" id="pSaat" value="20:00"></div>
+      </div>
+      <div class="form-satir" id="pGunKutu" hidden>
+        <span class="etiket">Günler</span>
+        <div class="cipler" id="pHazirGun">
+          <button type="button" class="cip" data-gunler="1,2,3,4,5,6,7">Her gün</button>
+          <button type="button" class="cip" data-gunler="1,2,3,4,5">Hafta içi</button>
+          <button type="button" class="cip" data-gunler="6,7">Hafta sonu</button>
+        </div>
+        <div class="cipler" id="pGunler" style="margin-top:6px">
+          <button type="button" class="cip" data-gun="1">Pzt</button><button type="button" class="cip" data-gun="2">Sal</button>
+          <button type="button" class="cip" data-gun="3">Çar</button><button type="button" class="cip" data-gun="4">Per</button>
+          <button type="button" class="cip" data-gun="5">Cum</button><button type="button" class="cip" data-gun="6">Cmt</button>
+          <button type="button" class="cip" data-gun="7">Paz</button>
+        </div>
+      </div>
+      <div class="form-satir">
+        <span class="etiket">TV kapalıysa</span>
+        <div class="cipler" id="pKapali">
+          <button type="button" class="cip secik" data-kapali="ac">Aç ve kanalı aç</button>
+          <button type="button" class="cip" data-kapali="atla">Atla</button>
+        </div>
+      </div>
+      <button type="button" class="tus gonder" id="pKaydet" style="width:100%;min-height:46px">Kaydet</button>
+      <div style="font-size:11.5px;color:var(--sub);margin-top:8px">Kanal değişmeden 1 dk ve 10 sn önce TV'de uyarı çıkar. Evdeki bilgisayar 7/24 açık olduğu için telefon kapalıyken de çalışır.</div>
+    </section>
+
+    <section class="prog-kart glass">
+      <h2>Geçmiş</h2>
+      <div id="progGecmis"><div class="bos-not">—</div></div>
+    </section>
+  </div>
+</div>
+<div class="pop-perde" id="popPerde" hidden></div>
+<!-- İkinci doğrulama: gece açma ve her kapatma -->
+<div class="onay-kap" id="onayKap" hidden>
+  <div class="onay-kart" role="alertdialog" aria-labelledby="onayBaslik">
+    <div class="onay-baslik" id="onayBaslik"></div>
+    <div class="onay-metin" id="onayMetin"></div>
+    <div class="onay-dugmeler">
+      <button type="button" class="tus" id="onayHayir">Vazgeç</button>
+      <button type="button" class="tus gonder" id="onayEvet">Evet</button>
+    </div>
+  </div>
+</div>
+<!-- Ayarlar: TV'de ayar menüsü açılır; burada dokunmatik yüzey + yön tuşları -->
+<div class="pop kanal-pop" id="ayarPop" hidden role="dialog" aria-label="TV ayarları kumandası">
+  <div class="dokunmatik" id="dokunmatik" aria-label="Dokunmatik yüzey: sürükle imleci oynatır, dokun tıklar"><span>Sürükle: imleç · Dokun: tıkla</span></div>
+  <div class="dpad">
+    <button type="button" class="tus yukari" data-tus="UP" data-tekrar aria-label="Yukarı">▲</button>
+    <button type="button" class="tus sol" data-tus="LEFT" data-tekrar aria-label="Sol">◀</button>
+    <button type="button" class="tus ok" data-tus="ENTER" aria-label="Tamam">OK</button>
+    <button type="button" class="tus sag" data-tus="RIGHT" data-tekrar aria-label="Sağ">▶</button>
+    <button type="button" class="tus asagi" data-tus="DOWN" data-tekrar aria-label="Aşağı">▼</button>
+  </div>
+  <div class="ayar-alt">
+    <button type="button" class="tus" data-tus="BACK" aria-label="Geri">↩ Geri</button>
+    <button type="button" class="tus" data-tus="EXIT" aria-label="Çıkış (Exit)">✕ Exit</button>
+  </div>
+</div>
+<!-- Kanala basılı tutunca: kanala şimdi / X dk sonra / saatinde git -->
+<div class="pop kanal-pop" id="kanalPop" hidden role="dialog" aria-label="Kanala git">
+  <div class="kp-ust"><span class="logo-kutu" id="kpLogo"></span><div class="kp-yazi"><div class="kp-ad" id="kpAd"></div><div class="kp-prog" id="kpProg"></div></div></div>
+  <div class="pop-baslik">Kanala git</div>
+  <button type="button" class="tus kp-akis" id="kpAkis">📅 Kanal programı (yayın akışı)</button>
+  <div class="kp-secenek">
+    <button type="button" class="tus" id="kpSimdi">▶ Şimdi</button>
+    <button type="button" class="tus" id="kpSonraBtn">⏱ <span id="kpSonraYazi">X dk sonra</span></button>
+    <button type="button" class="tus" id="kpSaatBtn">🕘 <span id="kpSaatYazi">Saat SS:DD</span></button>
+  </div>
+  <div id="kpSonra" hidden>
+    <div class="teker-kap"><div class="teker" id="kpDkTeker" aria-label="Dakika"></div><span class="teker-birim">dk</span></div>
+  </div>
+  <div id="kpSaat" hidden>
+    <div class="teker-cift">
+      <div class="teker-kap"><div class="teker" id="kpSaTeker" aria-label="Saat"></div></div>
+      <span class="iki-nokta">:</span>
+      <div class="teker-kap"><div class="teker" id="kpDaTeker" aria-label="Dakika"></div></div>
+    </div>
+  </div>
+  <button type="button" class="tus gonder genis" id="kpKur" hidden>Kur</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/i18n.js"></script>
+<script src="/saat.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

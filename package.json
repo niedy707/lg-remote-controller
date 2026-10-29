@@ -1,0 +1,38 @@
+{
+  "name": "lg-remote-controller",
+  "version": "0.1.0",
+  "description": "Phone web remote for LG webOS TVs (and Apple TV) — agent on the home network, optional internet gateway.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test agent/test/*.test.mjs server/*.test.cjs",
+    "agent": "node agent/tv-ajan.mjs",
+    "server": "node server/sunucu.cjs",
+    "demo": "node scripts/demo.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "web-push": "^3.6.7"
+  },
+  "keywords": [
+    "lg",
+    "webos",
+    "tv",
+    "remote",
+    "remote-control",
+    "apple-tv",
+    "pyatv",
+    "wake-on-lan",
+    "pwa",
+    "epg",
+    "home-automation",
+    "raspberry-pi"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/niedy707/lg-remote-controller.git"
+  }
+}

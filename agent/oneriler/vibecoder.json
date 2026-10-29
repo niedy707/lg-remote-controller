@@ -1,0 +1,766 @@
+{
+ "tip": "lg-remote-kanal-onerisi",
+ "surum": 1,
+ "ad": "Vibecoder önerisi",
+ "aciklama": "Türksat 42°E, Türkiye. Prime time kanallar önde: ana akım → haber → belgesel → dizi-film/yaşam → kalan haber → spor → çocuk → diğerleri.",
+ "gruplar": [
+  {
+   "ad": "A · Ana akım / prime time",
+   "adet": 10
+  },
+  {
+   "ad": "Öne alınan haber",
+   "adet": 4
+  },
+  {
+   "ad": "E · Belgesel",
+   "adet": 3
+  },
+  {
+   "ad": "B · Dizi-film / yaşam",
+   "adet": 10
+  },
+  {
+   "ad": "C · Haber (kalanlar, Türksat sırası)",
+   "adet": 20
+  },
+  {
+   "ad": "D · Spor",
+   "adet": 8
+  },
+  {
+   "ad": "F · Çocuk",
+   "adet": 5
+  },
+  {
+   "ad": "G · Müzik",
+   "adet": 4
+  },
+  {
+   "ad": "H · TRT diğer / dış yayın",
+   "adet": 8
+  }
+ ],
+ "kanallar": [
+  {
+   "name": "TRT1 HD",
+   "number": 1,
+   "isRadio": false,
+   "SVCID": 10601,
+   "TSID": 43105,
+   "ONID": 1070,
+   "frequency": 11794,
+   "serviceType": 25
+  },
+  {
+   "name": "ATV",
+   "number": 2,
+   "isRadio": false,
+   "SVCID": 10300,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "KANAL D HD",
+   "number": 3,
+   "isRadio": false,
+   "SVCID": 11701,
+   "TSID": 7,
+   "ONID": 66,
+   "frequency": 12245,
+   "serviceType": 25
+  },
+  {
+   "name": "SHOW HD",
+   "number": 4,
+   "isRadio": false,
+   "SVCID": 10700,
+   "TSID": 41704,
+   "ONID": 1070,
+   "frequency": 12303,
+   "serviceType": 25
+  },
+  {
+   "name": "STAR TV",
+   "number": 5,
+   "isRadio": false,
+   "SVCID": 10100,
+   "TSID": 40601,
+   "ONID": 1070,
+   "frequency": 12015,
+   "serviceType": 25
+  },
+  {
+   "name": "NOW HD",
+   "number": 6,
+   "isRadio": false,
+   "SVCID": 12700,
+   "TSID": 40105,
+   "ONID": 1070,
+   "frequency": 11887,
+   "serviceType": 25
+  },
+  {
+   "name": "TV8",
+   "number": 7,
+   "isRadio": false,
+   "SVCID": 15300,
+   "TSID": 40106,
+   "ONID": 1070,
+   "frequency": 11901,
+   "serviceType": 25
+  },
+  {
+   "name": "KANAL 7 HD",
+   "number": 8,
+   "isRadio": false,
+   "SVCID": 52000,
+   "TSID": 42203,
+   "ONID": 1070,
+   "frequency": 12458,
+   "serviceType": 25
+  },
+  {
+   "name": "BEYAZ TV HD",
+   "number": 9,
+   "isRadio": false,
+   "SVCID": 51800,
+   "TSID": 40504,
+   "ONID": 1070,
+   "frequency": 11996,
+   "serviceType": 25
+  },
+  {
+   "name": "TV8 5",
+   "number": 10,
+   "isRadio": false,
+   "SVCID": 15301,
+   "TSID": 40106,
+   "ONID": 1070,
+   "frequency": 11901,
+   "serviceType": 25
+  },
+  {
+   "name": "HABERTURK HD",
+   "number": 11,
+   "isRadio": false,
+   "SVCID": 10701,
+   "TSID": 41704,
+   "ONID": 1070,
+   "frequency": 12303,
+   "serviceType": 25
+  },
+  {
+   "name": "CNN TURK HD",
+   "number": 12,
+   "isRadio": false,
+   "SVCID": 11301,
+   "TSID": 30,
+   "ONID": 0,
+   "frequency": 12034,
+   "serviceType": 25
+  },
+  {
+   "name": "BLOOMBERGHT HD",
+   "number": 13,
+   "isRadio": false,
+   "SVCID": 10702,
+   "TSID": 41704,
+   "ONID": 1070,
+   "frequency": 12303,
+   "serviceType": 25
+  },
+  {
+   "name": "NTV",
+   "number": 14,
+   "isRadio": false,
+   "SVCID": 10101,
+   "TSID": 40601,
+   "ONID": 1070,
+   "frequency": 12015,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT BELGESEL HD",
+   "number": 15,
+   "isRadio": false,
+   "SVCID": 10804,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "TGRT BELGESEL HD",
+   "number": 16,
+   "isRadio": false,
+   "SVCID": 51204,
+   "TSID": 41902,
+   "ONID": 1070,
+   "frequency": 12380,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT 4K",
+   "number": 17,
+   "isRadio": false,
+   "SVCID": 16300,
+   "TSID": 43104,
+   "ONID": 1070,
+   "frequency": 11767,
+   "serviceType": 16
+  },
+  {
+   "name": "360 HD",
+   "number": 18,
+   "isRadio": false,
+   "SVCID": 16701,
+   "TSID": 43308,
+   "ONID": 1070,
+   "frequency": 11862,
+   "serviceType": 25
+  },
+  {
+   "name": "TV2 HD",
+   "number": 19,
+   "isRadio": false,
+   "SVCID": 11703,
+   "TSID": 7,
+   "ONID": 66,
+   "frequency": 12245,
+   "serviceType": 25
+  },
+  {
+   "name": "A2",
+   "number": 20,
+   "isRadio": false,
+   "SVCID": 10304,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "TLC HD",
+   "number": 21,
+   "isRadio": false,
+   "SVCID": 10111,
+   "TSID": 40601,
+   "ONID": 1070,
+   "frequency": 12015,
+   "serviceType": 25
+  },
+  {
+   "name": "DMAX HD",
+   "number": 22,
+   "isRadio": false,
+   "SVCID": 10110,
+   "TSID": 40601,
+   "ONID": 1070,
+   "frequency": 12015,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT2 HD",
+   "number": 23,
+   "isRadio": false,
+   "SVCID": 10506,
+   "TSID": 40301,
+   "ONID": 1070,
+   "frequency": 11958,
+   "serviceType": 25
+  },
+  {
+   "name": "TİVİ 6",
+   "number": 24,
+   "isRadio": false,
+   "SVCID": 14653,
+   "TSID": 38,
+   "ONID": 0,
+   "frequency": 12265,
+   "serviceType": 22
+  },
+  {
+   "name": "SHOW MAX HD",
+   "number": 25,
+   "isRadio": false,
+   "SVCID": 10704,
+   "TSID": 41704,
+   "ONID": 1070,
+   "frequency": 12303,
+   "serviceType": 25
+  },
+  {
+   "name": "TV 4 HD",
+   "number": 26,
+   "isRadio": false,
+   "SVCID": 16702,
+   "TSID": 43308,
+   "ONID": 1070,
+   "frequency": 11862,
+   "serviceType": 25
+  },
+  {
+   "name": "TGRT HD",
+   "number": 27,
+   "isRadio": false,
+   "SVCID": 51000,
+   "TSID": 60501,
+   "ONID": 1070,
+   "frequency": 12149,
+   "serviceType": 25
+  },
+  {
+   "name": "ULKE TV HD",
+   "number": 28,
+   "isRadio": false,
+   "SVCID": 52001,
+   "TSID": 42203,
+   "ONID": 1070,
+   "frequency": 12458,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT HABER HD",
+   "number": 29,
+   "isRadio": false,
+   "SVCID": 10801,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "A HABER",
+   "number": 30,
+   "isRadio": false,
+   "SVCID": 10301,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "24 HD",
+   "number": 31,
+   "isRadio": false,
+   "SVCID": 16700,
+   "TSID": 43308,
+   "ONID": 1070,
+   "frequency": 11862,
+   "serviceType": 25
+  },
+  {
+   "name": "HABER GLOBAL HD",
+   "number": 32,
+   "isRadio": false,
+   "SVCID": 11331,
+   "TSID": 30,
+   "ONID": 0,
+   "frequency": 12034,
+   "serviceType": 25
+  },
+  {
+   "name": "EKOTÜRK HD",
+   "number": 33,
+   "isRadio": false,
+   "SVCID": 52202,
+   "TSID": 12,
+   "ONID": 0,
+   "frequency": 12345,
+   "serviceType": 25
+  },
+  {
+   "name": "BENGÜ TÜRK HD",
+   "number": 34,
+   "isRadio": false,
+   "SVCID": 51801,
+   "TSID": 40504,
+   "ONID": 1070,
+   "frequency": 11996,
+   "serviceType": 25
+  },
+  {
+   "name": "TGRT HABER HD",
+   "number": 35,
+   "isRadio": false,
+   "SVCID": 51202,
+   "TSID": 41902,
+   "ONID": 1070,
+   "frequency": 12380,
+   "serviceType": 25
+  },
+  {
+   "name": "HALK TV HD",
+   "number": 36,
+   "isRadio": false,
+   "SVCID": 50703,
+   "TSID": 44,
+   "ONID": 0,
+   "frequency": 11225,
+   "serviceType": 25
+  },
+  {
+   "name": "FLASH HABER HD",
+   "number": 37,
+   "isRadio": false,
+   "SVCID": 50550,
+   "TSID": 49,
+   "ONID": 0,
+   "frequency": 12111,
+   "serviceType": 25
+  },
+  {
+   "name": "AKIT TV HD",
+   "number": 38,
+   "isRadio": false,
+   "SVCID": 51802,
+   "TSID": 40504,
+   "ONID": 1070,
+   "frequency": 11996,
+   "serviceType": 25
+  },
+  {
+   "name": "ULUSAL 1 TV",
+   "number": 39,
+   "isRadio": false,
+   "SVCID": 50809,
+   "TSID": 37,
+   "ONID": 0,
+   "frequency": 12423,
+   "serviceType": 22
+  },
+  {
+   "name": "EKOL TV HD",
+   "number": 40,
+   "isRadio": false,
+   "SVCID": 52203,
+   "TSID": 12,
+   "ONID": 0,
+   "frequency": 12345,
+   "serviceType": 25
+  },
+  {
+   "name": "KRT TV HD",
+   "number": 41,
+   "isRadio": false,
+   "SVCID": 51803,
+   "TSID": 40504,
+   "ONID": 1070,
+   "frequency": 11996,
+   "serviceType": 25
+  },
+  {
+   "name": "CNBC-E",
+   "number": 42,
+   "isRadio": false,
+   "SVCID": 11731,
+   "TSID": 7,
+   "ONID": 66,
+   "frequency": 12245,
+   "serviceType": 25
+  },
+  {
+   "name": "A PARA",
+   "number": 43,
+   "isRadio": false,
+   "SVCID": 10303,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "TELE 1 HD",
+   "number": 44,
+   "isRadio": false,
+   "SVCID": 11309,
+   "TSID": 30,
+   "ONID": 0,
+   "frequency": 12034,
+   "serviceType": 25
+  },
+  {
+   "name": "SZC",
+   "number": 45,
+   "isRadio": false,
+   "SVCID": 50560,
+   "TSID": 49,
+   "ONID": 0,
+   "frequency": 12111,
+   "serviceType": 25
+  },
+  {
+   "name": "TVNET HD",
+   "number": 46,
+   "isRadio": false,
+   "SVCID": 50701,
+   "TSID": 44,
+   "ONID": 0,
+   "frequency": 11225,
+   "serviceType": 25
+  },
+  {
+   "name": "TV 100 HD",
+   "number": 47,
+   "isRadio": false,
+   "SVCID": 50706,
+   "TSID": 44,
+   "ONID": 0,
+   "frequency": 11225,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT SPOR HD",
+   "number": 48,
+   "isRadio": false,
+   "SVCID": 10603,
+   "TSID": 43105,
+   "ONID": 1070,
+   "frequency": 11794,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT SPOR YILDIZ",
+   "number": 49,
+   "isRadio": false,
+   "SVCID": 10525,
+   "TSID": 40301,
+   "ONID": 1070,
+   "frequency": 11958,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT 3-SPOR",
+   "number": 50,
+   "isRadio": false,
+   "SVCID": 10503,
+   "TSID": 40301,
+   "ONID": 1070,
+   "frequency": 11958,
+   "serviceType": 25
+  },
+  {
+   "name": "A SPOR",
+   "number": 51,
+   "isRadio": false,
+   "SVCID": 10302,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "HT SPOR HD",
+   "number": 52,
+   "isRadio": false,
+   "SVCID": 10703,
+   "TSID": 41704,
+   "ONID": 1070,
+   "frequency": 12303,
+   "serviceType": 25
+  },
+  {
+   "name": "TİVİBU SPOR HD",
+   "number": 53,
+   "isRadio": false,
+   "SVCID": 14811,
+   "TSID": 25,
+   "ONID": 0,
+   "frequency": 11853,
+   "serviceType": 25
+  },
+  {
+   "name": "beIN SPORTS HABER.",
+   "number": 54,
+   "isRadio": false,
+   "SVCID": 51427,
+   "TSID": 28,
+   "ONID": 0,
+   "frequency": 12379,
+   "serviceType": 25
+  },
+  {
+   "name": "FB TV",
+   "number": 55,
+   "isRadio": false,
+   "SVCID": 51306,
+   "TSID": 46,
+   "ONID": 0,
+   "frequency": 11425,
+   "serviceType": 22
+  },
+  {
+   "name": "TRT COCUK HD",
+   "number": 56,
+   "isRadio": false,
+   "SVCID": 10600,
+   "TSID": 43105,
+   "ONID": 1070,
+   "frequency": 11794,
+   "serviceType": 25
+  },
+  {
+   "name": "minikaCOCUK",
+   "number": 57,
+   "isRadio": false,
+   "SVCID": 10306,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "minikaGO",
+   "number": 58,
+   "isRadio": false,
+   "SVCID": 10307,
+   "TSID": 41402,
+   "ONID": 1070,
+   "frequency": 12207,
+   "serviceType": 25
+  },
+  {
+   "name": "CARTOON NETWORK",
+   "number": 59,
+   "isRadio": false,
+   "SVCID": 11711,
+   "TSID": 7,
+   "ONID": 66,
+   "frequency": 12245,
+   "serviceType": 22
+  },
+  {
+   "name": "TRT DIYANET COCUK",
+   "number": 60,
+   "isRadio": false,
+   "SVCID": 10630,
+   "TSID": 43105,
+   "ONID": 1070,
+   "frequency": 11794,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT MUZIK HD",
+   "number": 61,
+   "isRadio": false,
+   "SVCID": 10807,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "POWERTURK HD",
+   "number": 62,
+   "isRadio": false,
+   "SVCID": 14652,
+   "TSID": 38,
+   "ONID": 0,
+   "frequency": 12265,
+   "serviceType": 25
+  },
+  {
+   "name": "NR1 TÜRK TV HD",
+   "number": 63,
+   "isRadio": false,
+   "SVCID": 51606,
+   "TSID": 36,
+   "ONID": 0,
+   "frequency": 12458,
+   "serviceType": 25
+  },
+  {
+   "name": "DREAM TÜRK",
+   "number": 64,
+   "isRadio": false,
+   "SVCID": 11705,
+   "TSID": 7,
+   "ONID": 66,
+   "frequency": 12245,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT WORLD HD",
+   "number": 65,
+   "isRadio": false,
+   "SVCID": 10803,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT AVAZ HD",
+   "number": 66,
+   "isRadio": false,
+   "SVCID": 10905,
+   "TSID": 41005,
+   "ONID": 1070,
+   "frequency": 12092,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT TURK HD",
+   "number": 67,
+   "isRadio": false,
+   "SVCID": 10808,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT ARABI HD",
+   "number": 68,
+   "isRadio": false,
+   "SVCID": 10906,
+   "TSID": 41005,
+   "ONID": 1070,
+   "frequency": 12092,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT KURDI HD",
+   "number": 69,
+   "isRadio": false,
+   "SVCID": 10806,
+   "TSID": 41306,
+   "ONID": 1070,
+   "frequency": 12226,
+   "serviceType": 25
+  },
+  {
+   "name": "TRT EBA HD",
+   "number": 70,
+   "isRadio": false,
+   "SVCID": 52002,
+   "TSID": 42203,
+   "ONID": 1070,
+   "frequency": 12458,
+   "serviceType": 25
+  },
+  {
+   "name": "A NEWS HD",
+   "number": 71,
+   "isRadio": false,
+   "SVCID": 10402,
+   "TSID": 21,
+   "ONID": 0,
+   "frequency": 11833,
+   "serviceType": 25
+  },
+  {
+   "name": "DIYANET TV HD",
+   "number": 72,
+   "isRadio": false,
+   "SVCID": 51203,
+   "TSID": 41902,
+   "ONID": 1070,
+   "frequency": 12380,
+   "serviceType": 25
+  }
+ ]
+}

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LG Remote — Giriş</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="LG Remote">
+  <meta name="theme-color" content="#07070d">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(60% 60% at 15% 0%, rgba(166,139,224,.30), transparent 70%),
+                  radial-gradient(55% 55% at 90% 10%, rgba(88,201,251,.25), transparent 65%), #07070d;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .login-card {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 22px; padding: 40px 28px;
+      width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-card h1 { color: #fff; font-size: 26px; margin-bottom: 8px; }
+    .login-card p { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 28px; }
+    .login-card .icon { font-size: 46px; margin-bottom: 14px; }
+    input[type="password"] {
+      width: 100%; padding: 14px 18px; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+      background: rgba(255,255,255,0.08); color: #fff; font-size: 16px; outline: none; transition: border-color 0.2s;
+    }
+    input[type="password"]:focus { border-color: #58c9fb; }
+    input[type="password"]::placeholder { color: rgba(255,255,255,0.3); }
+    button {
+      width: 100%; padding: 14px; margin-top: 16px; border: none; border-radius: 12px;
+      background: linear-gradient(180deg, #7fd6fc, #58c9fb); color: #07070d; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    .error { color: #ff6b74; font-size: 13px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <form class="login-card" method="POST" action="/login">
+    <div class="icon">📺</div>
+    <h1>LG Remote</h1>
+    <p data-i18n>TV kumandası</p>
+    <input type="password" name="password" data-i18n-placeholder="Şifre" placeholder="Şifre" autocomplete="current-password" autofocus required>
+    <button type="submit" data-i18n>Giriş yap</button>
+  </form>
+  <script>
+    // Tek sayfalık küçük çeviri: arayüz dili tarayıcıdan (ya da kumandada seçilen dilden) gelir.
+    (function () {
+      var EN = { 'TV kumandası': 'TV remote', 'Şifre': 'Password', 'Giriş yap': 'Sign in', 'LG Remote — Giriş': 'LG Remote — Sign in',
+        'Çok fazla deneme — bir saat sonra tekrar deneyin': 'Too many attempts — try again in an hour', 'Yanlış şifre': 'Wrong password' };
+      var dil = 'tr';
+      try { dil = localStorage.getItem('dil') || ''; } catch (e) { dil = ''; }
+      if (!dil) dil = /^tr\b/i.test(navigator.language || '') ? 'tr' : 'en';
+      var t = function (s) { return dil === 'en' && EN[s] ? EN[s] : s; };
+      document.documentElement.lang = dil;
+      document.title = t(document.title);
+      document.querySelectorAll('[data-i18n]').forEach(function (e) { e.textContent = t(e.textContent.trim()); });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(function (e) { e.placeholder = t(e.getAttribute('data-i18n-placeholder')); });
+      var q = location.search, kart = document.querySelector('.login-card');
+      var yaz = function (m) { var p = document.createElement('p'); p.className = 'error'; p.textContent = t(m); kart.appendChild(p); };
+      if (q.indexOf('error=lock') !== -1) yaz('Çok fazla deneme — bir saat sonra tekrar deneyin');
+      else if (q.indexOf('error=1') !== -1) yaz('Yanlış şifre');
+    })();
+  </script>
+</body>
+</html>

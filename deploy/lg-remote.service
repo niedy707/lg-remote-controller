@@ -1,0 +1,26 @@
+# systemd unit for the gateway (server/). Install:
+#   sudo cp deploy/lg-remote.service /etc/systemd/system/ && sudo systemctl enable --now lg-remote
+# Secrets go to /etc/lg-remote.env (chmod 600), see README → Gateway.
+[Unit]
+Description=LG Remote gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lg-remote-controller
+ExecStart=/usr/bin/node server/sunucu.cjs
+EnvironmentFile=/etc/lg-remote.env
+Restart=always
+RestartSec=5
+DynamicUser=yes
+StateDirectory=lg-remote
+# Push subscriptions live in data/; point it at the state directory:
+Environment=KUMANDA_VERI=/var/lib/lg-remote
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

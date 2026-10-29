@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Engeller ve kilit</title>
+<meta name="theme-color" content="#07070d">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* YouTube engelleri (kanal · kelime · video ayrı bölümlerde, net görünsün) ve TV kilidi. */
+  body { padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
+  [hidden] { display: none !important; }
+  .kap { max-width: 760px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 14px 0; }
+  .ust { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .ust h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; flex: 1; }
+  .geri { color: var(--sub); text-decoration: none; font-weight: 600; font-size: 14px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--lg-surface); white-space: nowrap; }
+  .kart { padding: 16px; margin-bottom: 12px; }
+  .kart h2 { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+  .kart h2 .sayi { font-size: 12px; font-weight: 800; color: var(--sub); background: rgba(255,255,255,.08); padding: 2px 8px; border-radius: 999px; }
+  .anahtar { display: flex; align-items: center; gap: 12px; }
+  .anahtar .ne { flex: 1; }
+  .anahtar .ne b { display: block; font-size: 15px; }
+  .anahtar .ne small { color: var(--sub); font-size: 12.5px; }
+  .dugme-anahtar { appearance: none; width: 52px; height: 30px; border-radius: 999px; border: 0; background: rgba(255,255,255,.16); position: relative; cursor: pointer; flex: none; transition: background .2s; }
+  .dugme-anahtar::after { content: ''; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .dugme-anahtar[aria-checked="true"] { background: #34c759; }
+  .dugme-anahtar[aria-checked="true"]::after { transform: translateX(22px); }
+  .ekle { display: flex; gap: 8px; }
+  .ekle input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,.25); color: var(--text); }
+  .ekle button, .tur button { appearance: none; font: inherit; font-weight: 700; cursor: pointer; border-radius: 12px; border: 1px solid var(--glass-border); color: var(--text); }
+  .ekle button { padding: 0 16px; background: #e5484d; border-color: #e5484d; color: #fff; }
+  .ekle button:disabled { opacity: .5; }
+  .tur { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tur button { font-size: 13px; padding: 7px 12px; border-radius: 999px; background: var(--lg-surface); color: var(--sub); }
+  .tur button.secik { background: linear-gradient(180deg, #7fd6fc, var(--accent)); color: #07070d; border-color: transparent; }
+  .ipucu { font-size: 12.5px; color: var(--sub); margin-top: 8px; line-height: 1.45; }
+  .kural { display: flex; align-items: center; gap: 10px; padding: 10px 2px; border-top: 1px solid rgba(255,255,255,.06); }
+  .kural:first-child { border-top: 0; }
+  .kural .ne { flex: 1; min-width: 0; }
+  .kural .ne b { display: block; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kural .ne small { display: block; color: var(--sub); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kural a { color: inherit; }
+  .sil { appearance: none; flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-border); background: rgba(255,255,255,.06); color: var(--sub); font-size: 15px; cursor: pointer; }
+  .kelimeler { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kelime { display: inline-flex; align-items: center; gap: 6px; padding: 6px 6px 6px 12px; border-radius: 999px; background: rgba(229,72,77,.16); border: 1px solid rgba(229,72,77,.35); font-weight: 700; font-size: 14px; }
+  .kelime .sil { width: 26px; height: 26px; font-size: 12px; }
+  .olay { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; padding: 9px 2px; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; }
+  .olay:first-child { border-top: 0; }
+  .olay .zaman { color: var(--sub); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .olay b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .olay small { color: var(--sub); }
+  .bos { color: var(--sub); font-size: 13.5px; padding: 6px 2px; }
+  .daha { font-size: 12px; color: var(--sub); padding: 8px 2px 0; cursor: pointer; }
+  .bolum { font-size: 13px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .07em; margin: 20px 2px 10px; }
+  .kucuk-dugme { appearance: none; font: inherit; font-weight: 700; font-size: 13.5px; padding: 9px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--text); cursor: pointer; flex: none; }
+  .kucuk-dugme.kirmizi { background: #e5484d; border-color: #e5484d; color: #fff; }
+  .kucuk-dugme.yesil { background: #2f9e57; border-color: #2f9e57; color: #fff; }
+  .kucuk-dugme:disabled { opacity: .5; cursor: default; }
+  .secenekler { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .secenekler button { appearance: none; font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 11px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--sub); cursor: pointer; }
+  .secenekler button.secik { background: linear-gradient(180deg, #7fd6fc, var(--accent)); color: #07070d; border-color: transparent; }
+  /* TV'de görünen çok satırlı metinler (kilit mesajı, engel mesajı ve uyarısı) */
+  .mesaj-ayar { margin-top: 12px; border-top: 1px solid rgba(255,255,255,.06); padding-top: 10px; }
+  .mesaj-ayar summary { cursor: pointer; font-size: 13px; color: var(--sub); font-weight: 600; }
+  .mesaj-ayar label { display: block; font-size: 12.5px; color: var(--sub); font-weight: 600; margin: 10px 0 -2px; }
+  .mesaj-ayar textarea { width: 100%; margin: 8px 0; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,.25); color: var(--text); resize: vertical; }
+  .mesaj-ayar .ipucu { margin: 0 0 8px; }
+  .not { font-size: 11.5px; color: var(--faint); margin-top: 14px; line-height: 1.5; }
+
+  /* ── TV kilidi: TV seçimi segmentli düğme, süre/kapsam/kilitle tek kopya — seçili TV'ye uygulanır ── */
+  .oda-sec { display: flex; gap: 5px; background: rgba(0,0,0,.22); padding: 4px; border-radius: 13px; border: 1px solid var(--glass-border); }
+  .oda-sec-btn { flex: 1; appearance: none; font: inherit; cursor: pointer; border: 0; background: none; color: var(--sub); border-radius: 10px; padding: 7px 8px; display: flex; flex-direction: column; align-items: center; gap: 1px; transition: background .2s, color .2s; min-width: 0; }
+  .oda-sec-btn .oda-ad { font-size: 14px; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .oda-sec-btn .oda-dur { font-size: 10.5px; font-weight: 600; opacity: .85; }
+  .oda-sec-btn.secik { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.055)); color: var(--text); box-shadow: var(--lg-edge-soft); }
+  .oda-sec-btn.kilitli .oda-dur { color: #ff8a8e; }
+  .oda-sec.ikili { margin-top: 8px; }
+  .oda-sec.ikili .oda-sec-btn { padding: 9px 8px; }
+  .kilit-panel { margin-top: 11px; }
+  .kilit-durum { font-size: 12.5px; color: var(--sub); margin: 10px 0 2px; }
+  .kilit-durum.kilitli { color: #ff8a8e; font-weight: 700; }
+  .kucuk-dugme.genis { width: 100%; margin-top: 11px; padding: 11px; font-size: 14px; }
+
+  /* ── Sekmeler (Engellenenler · Engellenmeyenler) ── */
+  .sekmeler { display: flex; gap: 5px; margin-bottom: 12px; background: rgba(0,0,0,.2); padding: 4px; border-radius: 12px; border: 1px solid var(--glass-border); }
+  .sekme { flex: 1; appearance: none; font: inherit; font-size: 12.5px; font-weight: 700; padding: 8px 6px; border-radius: 9px; border: 0; background: none; color: var(--sub); cursor: pointer; transition: background .2s, color .2s; }
+  .sekme.secik { background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.055)); color: var(--text); box-shadow: var(--lg-edge-soft); }
+
+  /* ── İzlenen (engellenmeyen) video satırı: zaman · içerik · Engelle ── */
+  .olay.izlenen { grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; column-gap: 9px; }
+  .engelle-btn { flex: none; padding: 7px 13px; font-size: 13px; }
+  /* Video adı tıklanabilir (YouTube'da aç / ara) — iki listede de */
+  .olay .yt-ad { display: block; font-weight: 700; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+  .olay .yt-ad:hover, .olay .yt-ad:active { color: var(--accent); text-decoration: underline; }
+
+  /* ── Modal (kilit onayı · engelleme seçenekleri) — telefonda alt sayfa, geniş ekranda ortada ── */
+  .modal-ort { position: fixed; inset: 0; z-index: 500; display: flex; align-items: flex-end; justify-content: center; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); background: rgba(0,0,0,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: modal-fade .2s var(--ease); }
+  @keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+  .modal-kutu { width: 100%; max-width: 440px; padding: 18px; border-radius: 22px; animation: modal-yuksel .25s var(--ease); }
+  @keyframes modal-yuksel { from { transform: translateY(20px); opacity: .5; } to { transform: none; opacity: 1; } }
+  .modal-baslik { font-size: 17px; font-weight: 800; margin-bottom: 12px; }
+  .modal-govde { font-size: 14px; line-height: 1.5; color: var(--text); }
+  .modal-dugmeler { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-dugme { flex: 1; appearance: none; font: inherit; font-weight: 700; font-size: 14.5px; padding: 12px; border-radius: 14px; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--text); cursor: pointer; }
+  .modal-dugme.kirmizi { background: #e5484d; border-color: #e5484d; color: #fff; }
+  .modal-dugme.sade { background: rgba(255,255,255,.06); color: var(--sub); }
+  @media (min-width: 520px) { .modal-ort { align-items: center; } }
+
+  .onay-satir { font-size: 15px; font-weight: 700; margin-bottom: 10px; line-height: 1.35; }
+  .onay-ozet { display: flex; flex-direction: column; gap: 7px; background: rgba(0,0,0,.22); border-radius: 12px; padding: 10px 13px; }
+  .onay-ozet .satir { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+  .onay-ozet .satir .et { color: var(--sub); }
+  .onay-ozet .satir .dg { font-weight: 700; text-align: right; }
+  .onay-not { font-size: 12.5px; color: var(--sub); margin-top: 11px; line-height: 1.45; }
+
+  /* ── Engelleme seçenekleri (bu video · bu kanal · kelime) ── */
+  .engel-secenekler { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .engel-sec { appearance: none; font: inherit; font-weight: 700; font-size: 14px; text-align: left; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--lg-surface); color: var(--text); cursor: pointer; }
+  .engel-sec small { display: block; font-size: 11.5px; font-weight: 500; color: var(--sub); margin-top: 2px; }
+  .engel-sec:disabled { opacity: .4; cursor: default; }
+  .engel-kelime-etiket { font-size: 12px; color: var(--sub); margin: 6px 0 -2px; }
+  .engel-kelime { display: flex; gap: 8px; }
+  .engel-kelime input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 11px 12px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,.25); color: var(--text); }
+  .engel-sec.kelime-onay { flex: none; background: #e5484d; border-color: #e5484d; color: #fff; padding: 0 15px; }
+</style>
+</head>
+<body>
+<div class="kap">
+  <header class="ust">
+    <a class="geri" href="/" aria-label="Kumandaya dön">‹ Kumanda</a>
+    <h1>Engeller ve kilit</h1>
+    <a class="geri" href="/detail" aria-label="İzleme ayrıntıları">ℹ️ Detail</a>
+  </header>
+
+  <section class="kart glass">
+    <h2>🔒 TV kilidi</h2>
+    <div id="kilitListe"></div>
+    <details class="mesaj-ayar">
+      <summary>TV'de görünecek kilit mesajı</summary>
+      <textarea id="kilitMesaj" rows="4" maxlength="500" placeholder="Her satır ayrı (en çok 5 satır, satır başına 80 karakter)" aria-label="Kilit mesajı"></textarea>
+      <p class="ipucu">Aradaki boş satır korunur (ayırıcı); baştaki ve sondaki boş satırlar atılır. Boş bırakılan kutu varsayılan metne döner.</p>
+      <button type="button" class="kucuk-dugme" id="mesajKaydet">Mesajı kaydet</button>
+    </details>
+  </section>
+
+  <h2 class="bolum">▶️ YouTube engelleri</h2>
+
+  <section class="kart glass">
+    <div class="anahtar">
+      <div class="ne"><b>YouTube engelleme</b><small id="durumMetni">—</small></div>
+      <button type="button" class="dugme-anahtar" id="acikDugme" role="switch" aria-checked="false" aria-label="Engelleme açık/kapalı"></button>
+    </div>
+    <details class="mesaj-ayar">
+      <summary>TV'de görünecek engel metinleri</summary>
+      <label for="engelMesaj">1. kademe — video engellenince</label>
+      <textarea id="engelMesaj" rows="3" maxlength="500" placeholder="Her satır ayrı (en çok 5 satır, satır başına 80 karakter)"></textarea>
+      <label for="engelUyari">2. kademe — aynı video yeniden açılınca (YouTube kapatılır)</label>
+      <textarea id="engelUyari" rows="3" maxlength="500" placeholder="Her satır ayrı (en çok 5 satır, satır başına 80 karakter)"></textarea>
+      <p class="ipucu">Aradaki boş satır korunur (ayırıcı); baştaki ve sondaki boş satırlar atılır. Boş bırakılan kutu varsayılan metne döner.</p>
+      <button type="button" class="kucuk-dugme" id="engelMetinKaydet">Metinleri kaydet</button>
+    </details>
+  </section>
+
+  <section class="kart glass">
+    <h2>➕ Engel ekle</h2>
+    <form class="ekle" id="ekleForm">
+      <input id="metin" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="300" placeholder="YouTube linki, kanal adı ya da kelime" aria-label="YouTube linki, kanal adı ya da kelime">
+      <button type="submit" id="ekleBtn">Engelle</button>
+    </form>
+    <div class="tur" id="turSecim" role="radiogroup" aria-label="Ne engellensin">
+      <button type="button" data-tur="" class="secik">Otomatik</button>
+      <button type="button" data-tur="kanal">📺 Kanal</button>
+      <button type="button" data-tur="kelime">🔤 Kelime</button>
+    </div>
+    <div class="ipucu" id="turIpucu"></div>
+  </section>
+
+  <section class="kart glass">
+    <h2>📺 Kanallar <span class="sayi" id="kanalSayi">0</span></h2>
+    <div id="kanalListe"></div>
+  </section>
+
+  <section class="kart glass">
+    <h2>🔤 Kelimeler <span class="sayi" id="kelimeSayi">0</span></h2>
+    <div class="kelimeler" id="kelimeListe"></div>
+  </section>
+
+  <section class="kart glass">
+    <h2>🎬 Videolar <span class="sayi" id="videoSayi">0</span></h2>
+    <div id="videoListe"></div>
+  </section>
+
+  <section class="kart glass">
+    <div class="sekmeler" role="tablist" aria-label="Son engellenenler ve izlenenler">
+      <button type="button" class="sekme secik" data-sekme="olay" role="tab" aria-selected="true">🚫 Engellenenler</button>
+      <button type="button" class="sekme" data-sekme="izlenen" role="tab" aria-selected="false">▶️ Engellenmeyenler</button>
+    </div>
+    <div id="olayPanel" role="tabpanel">
+      <div id="olayListe"></div>
+    </div>
+    <div id="izlenenPanel" role="tabpanel" hidden>
+      <p class="ipucu" style="margin-top: 0">Son 7 günde izlenen, engelli olmayan YouTube videoları. Engelle'ye basınca: yalnız bu video · kanalı · anahtar kelime.</p>
+      <div id="izlenenListe"></div>
+    </div>
+  </section>
+
+  <section class="kart glass">
+    <h2>📝 İşlem kaydı</h2>
+    <div id="islemListe"></div>
+  </section>
+
+  <p class="not">Kilit: kilitli TV kumandadan açılamaz; kendi kumandasıyla açılırsa birkaç saniye içinde ekranda kilit mesajı çıkar, ardından TV (seçiliyse Apple TV de uyutularak) kapanır ve telefona bildirim gelir.</p>
+  <p class="not">Engel, Apple TV'deki YouTube'da çalışır: kurala uyan video oynamaya başlayınca birkaç saniye içinde TV'de engel mesajı görünür, video durdurulur ve oynatıcıdan çıkılır; aynı video kısa süre içinde yeniden açılırsa uyarı gösterilip YouTube uygulaması kapatılır. Kelime, video başlığında ya da kanal adında bir sözcüğün başında geçerse tutar; büyük/küçük harf ve Türkçe harf farkı gözetilmez. LG'nin kendi YouTube uygulamasında izlenen video okunamadığı için orada engel çalışmaz.</p>
+</div>
+<div class="modal-ort" id="modal" hidden>
+  <div class="modal-kutu glass" role="dialog" aria-modal="true" aria-labelledby="modalBaslik">
+    <div class="modal-baslik" id="modalBaslik"></div>
+    <div class="modal-govde" id="modalGovde"></div>
+    <div class="modal-dugmeler" id="modalDugmeler"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/i18n.js"></script>
+<script src="/saat.js"></script>
+<script src="/engel.js"></script>
+</body>
+</html>

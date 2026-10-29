@@ -1,0 +1,20 @@
+node_modules/
+config.json
+data/
+.env
+*.log
+.DS_Store
+__pycache__/
+# Ajan yerel dosyaları (adresler, eşleşme anahtarları)
+tv-ajan.tvler.json
+.lgtv-clients.json
+# İç notlar depoya girmez (ekosistem kuralı)
+TODO.md
+COZUMLER.md
+CLAUDE.md
+.claude/
+# İç raporlar (raporla / denetle / tara) — public depoya girmez
+*_rapor*.md
+*_denetim*.md
+*_tara*.md
+*_tara*.json

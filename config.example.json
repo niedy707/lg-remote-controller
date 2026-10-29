@@ -1,0 +1,49 @@
+{
+  "_aciklama": "Kopyala: cp config.example.json config.json (config.json git dışı). Kanal adları TV'deki adla eşleşir (\"Habertürk\" → \"HABERTURK HD\"). Logolar <veri dizini>/logolar/<ad>.png (veri dizini KUMANDA_VERI, yoksa data/) — depoda yok.",
+  "kanallar": {
+    "favoriler": [
+      "TRT 1",
+      "Kanal D",
+      "Show TV",
+      "Star TV",
+      "NOW",
+      "TV8",
+      "CNN Türk",
+      "Habertürk",
+      "Bloomberg HT"
+    ],
+    "diger": [
+      "360",
+      "A2",
+      "Cartoon Network",
+      "Haber Global",
+      "Halk TV",
+      "Kanal 7",
+      "NTV",
+      "TRT Çocuk",
+      "TV8,5",
+      "TYT Türk"
+    ],
+    "logolar": {
+      "Kanal D": "kanald",
+      "Star TV": "startv",
+      "Show TV": "showtv",
+      "Habertürk": "haberturk",
+      "CNN Türk": "cnnturk",
+      "Bloomberg HT": "bloomberght",
+      "TRT 1": "trt1",
+      "TV8": "tv8",
+      "NOW": "now",
+      "Kanal 7": "kanal7",
+      "Halk TV": "halktv",
+      "A2": "a2",
+      "TRT Çocuk": "trtcocuk",
+      "360": "360",
+      "NTV": "ntv",
+      "Cartoon Network": "cartoon",
+      "Haber Global": "haberglobal",
+      "TV8,5": "tv85",
+      "TYT Türk": "tytturk"
+    }
+  }
+}

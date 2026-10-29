@@ -1,0 +1,96 @@
+/* LG Remote Controller — ortak tokenlar ve cam (liquid glass) temeli. Kumandaya özgü stiller index.html içinde. */
+:root {
+  --glass: rgba(255,255,255,0.055);
+  --glass-border: rgba(255,255,255,0.14);
+  --glass-hover: rgba(255,255,255,0.10);
+  --text: #f4f4fb;
+  --sub: #9494ac;
+  --faint: #63637a;
+  --accent: #58c9fb;
+  --accent-dim: rgba(88,201,251,0.16);
+  --accent2: #6fd07a;
+  --warn: #ffbe5c;
+  --danger: #ff6b74;
+  --r-md: 16px;
+  --r-lg: 22px;
+  --ease: cubic-bezier(.22,1,.36,1);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.18);
+  /* ── Liquid Glass reçetesi ── */
+  --lg-surface: linear-gradient(158deg, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.04) 46%, rgba(255,255,255,0.02) 100%);
+  --lg-edge: inset 0 1px 0 rgba(255,255,255,0.30);       /* üst spektral kenar ışığı */
+  --lg-edge-soft: inset 0 1px 0 rgba(255,255,255,0.18);
+  --lg-depth: inset 0 -2px 5px rgba(0,0,0,0.22);          /* alt cam derinliği */
+  --lg-rim: inset 0 0 0 0.5px rgba(255,255,255,0.06);     /* ince cam çerçeve */
+  --lg-drop: 0 10px 34px rgba(0,0,0,0.34);                /* ambient gölge */
+  --lg-blur: blur(22px) saturate(185%) brightness(1.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: #07070d;
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+  position: relative;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+body::before {
+  content: ''; position: fixed; inset: -20%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(50% 55% at 12% 2%, rgba(166,139,224,0.34), transparent 66%),
+    radial-gradient(48% 52% at 92% 8%, rgba(88,201,251,0.30), transparent 62%),
+    radial-gradient(55% 58% at 68% 102%, rgba(111,208,122,0.20), transparent 64%),
+    radial-gradient(42% 46% at 26% 74%, rgba(255,150,120,0.14), transparent 62%),
+    radial-gradient(40% 44% at 50% 40%, rgba(88,201,251,0.07), transparent 70%);
+  filter: blur(16px);
+  animation: mesh-drift 34s ease-in-out infinite alternate;
+}
+@keyframes mesh-drift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(2.5%, -2%, 0) scale(1.06); }
+  100% { transform: translate3d(-2%, 2.5%, 0) scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+/* ── Liquid Glass Card ── */
+.glass {
+  position: relative;
+  background: var(--lg-surface);
+  backdrop-filter: var(--lg-blur); -webkit-backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--lg-drop), var(--lg-edge), var(--lg-depth), var(--lg-rim);
+  transition: background .25s var(--ease), border-color .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+/* Üst-sol köşede yumuşak spektral parlama — camın ışığı yakaladığı nokta */
+.glass::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(130% 90% at 12% -10%, rgba(255,255,255,0.12), rgba(255,255,255,0.03) 34%, transparent 60%);
+  opacity: 0.9; mix-blend-mode: screen;
+}
+.glass:hover { background: var(--glass-hover); border-color: rgba(255,255,255,0.22); box-shadow: var(--lg-drop), var(--lg-edge), var(--lg-depth), var(--lg-rim), 0 0 0 1px rgba(255,255,255,0.03); }
+/* ── Toast ── */
+.toast {
+  /* ⚠️ pointer-events: none — görünmezken (opacity 0) bile en üst katmanda (z-index 1000) ve
+     alt menünün TAM ÜSTÜNDE duruyordu: bir bildirim gösterildikten sonra alt çubuğa yapılan
+     dokunuşların %32'sini yutuyordu (ölçüldü). Toast yalnız metin, dokunulacak
+     bir şeyi yok. */
+  pointer-events: none;
+  position: fixed; bottom: 84px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+  background: rgba(35,35,55,0.85); color: #fff;
+  padding: 11px 22px; border-radius: var(--r-md); font-size: 12.5px; font-weight: 500;
+  z-index: 1000; opacity: 0; transition: all .35s var(--ease);
+  border: 1px solid var(--glass-border);
+  /* Uzun mesajlar 375px ekranda kırpılmasın — sarmaya izin ver */
+  max-width: min(92vw, 480px); text-align: center; white-space: normal; line-height: 1.4;
+  box-shadow: var(--shadow-card);
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.error { background: rgba(211,47,47,0.88); border-color: rgba(239,83,80,0.5); }
+.toast.success { background: rgba(46,125,50,0.88); border-color: rgba(102,187,106,0.5); color: #fff; }

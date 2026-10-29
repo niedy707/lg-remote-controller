@@ -1,0 +1,44 @@
+# systemd birimi — /etc/systemd/system/tv-ajan.service olarak kurulur (kur.sh yapar)
+#
+# Log:     journalctl -u tv-ajan -f
+# Sağlık:  kumanda ajan çevrimdışıysa bunu yazar.
+#
+# Ayrı birim, ayrı kullanıcı, sertleştirilmiş. Ajan geçitten KOMUT alır; bu yüzden yalnız
+# TV_AJAN_HOST adresine bağlanır (VPN ya da 127.0.0.1) ve her istekte belirteç ister.
+
+[Unit]
+Description=LG Remote ajani — evdeki LG TV'leri kumandaya acar (kumanda, durum, ekran, acma, yayin akisi, kilit, engel)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /opt/tv-ajan/agent/tv-ajan.mjs
+WorkingDirectory=/opt/tv-ajan
+EnvironmentFile=/etc/tv-ajan.env
+
+# VPN adresi açılmadan başlarsa bağlanamaz (EADDRNOTAVAIL) — yeniden dener.
+Restart=always
+RestartSec=10
+
+User=tvajan
+Group=tvajan
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+# AF_NETLINK: Wake-on-LAN yayın adresi için arayüz listesi (os.networkInterfaces) bunu ister.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+# Durum dizini (rehber önbelleği, zamanlayıcı, kilit/engel kayıtları, izleme kaydı, Apple TV kimlikleri)
+# → /var/lib/tv-ajan (STATE_DIRECTORY). ProtectSystem=strict altında yazılabilen tek yer burası.
+StateDirectory=tv-ajan
+StateDirectoryMode=0750
+# Bellek sızıntısına karşı üst sınır (Apple TV yardımcısı ve ekran ölçümü de bu birimin içinde sayılır):
+# aşılırsa systemd servisi yeniden başlatır, makine kilitlenmez.
+MemoryMax=512M
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

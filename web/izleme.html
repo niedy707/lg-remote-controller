@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TV'ler — şu an ve bugün</title>
+<meta name="theme-color" content="#07070d">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* Detail (izleme ayrıntıları): kumandanın cam dili; grafikler doğrudan SVG / CSS. */
+  body { padding: 0 0 calc(24px + env(safe-area-inset-bottom)); }
+  [hidden] { display: none !important; }
+  .kap { max-width: 1100px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 14px 0; }
+  .ust { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .ust h1 { font-size: 22px; font-weight: 800; letter-spacing: -.02em; flex: 1; }
+  .geri { color: var(--sub); text-decoration: none; font-weight: 600; font-size: 14px; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--lg-surface); white-space: nowrap; }
+  .denetim { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+  .secim { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: var(--lg-surface); border: 1px solid var(--glass-border);
+    box-shadow: var(--lg-edge), var(--lg-depth); -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur); }
+  .secim button { appearance: none; border: 0; background: transparent; color: var(--sub); font: inherit; font-size: 13.5px; font-weight: 700;
+    padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+  .secim button.secik { background: linear-gradient(180deg, #7fd6fc, var(--accent)); color: #07070d; }
+  .tarih { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+  .tarih button { appearance: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--lg-surface);
+    color: var(--text); font-size: 18px; cursor: pointer; }
+  .tarih button:disabled { opacity: .35; cursor: default; }
+  .tarih .etiket { min-width: 150px; text-align: center; font-weight: 700; font-size: 14px; }
+  .tarih .bugun { width: auto; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+  .izgara { display: grid; gap: 12px; grid-template-columns: repeat(12, 1fr); }
+  .kart { grid-column: span 12; padding: 16px; }
+  @media (min-width: 900px) { .yarim { grid-column: span 6; } }
+  .kart h2 { font-size: 12px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .07em; margin-bottom: 12px; }
+  .ozetler { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .ozet { padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.04); border: 1px solid var(--glass-border); position: relative; overflow: hidden; }
+  .ozet .ad { font-size: 12px; color: var(--sub); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .ozet .deger { font-size: 24px; font-weight: 800; margin-top: 4px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .ozet .alt { font-size: 11.5px; color: var(--sub); margin-top: 2px; }
+  .ozet.ana { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(88,201,251,.22), rgba(166,139,224,.16)); }
+  .ozet.ana .deger { font-size: 32px; }
+  @media (min-width: 700px) { .ozet.ana { grid-column: span 2; } }
+  @media (max-width: 380px) { .ozet .deger { font-size: 21px; } }
+  .nokta { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; }
+  .serit { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.05); margin: 14px 0 8px; }
+  .serit span { height: 100%; }
+  .lejant { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--sub); }
+  .lejant span { display: inline-flex; align-items: center; gap: 6px; }
+  svg { display: block; width: 100%; overflow: visible; }
+  svg text { fill: var(--sub); font-size: 10.5px; font-family: inherit; }
+  .zc-tv { font-size: 12px; font-weight: 700; color: var(--text); margin: 10px 0 4px; }
+  .liste { display: flex; flex-direction: column; gap: 2px; }
+  .satir { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 4px; border-top: 1px solid rgba(255,255,255,.06); }
+  .satir:first-child { border-top: 0; }
+  .satir .ad { font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .satir .ad .metin, .oturum .ne b .metin { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .satir .ad small { color: var(--sub); font-weight: 500; flex: none; }
+  /* YouTube videosunun bağlantısı: başlığın hemen yanında (başlık kesilse de bağlantı görünür kalır) */
+  .yt { flex: none; display: inline-flex; align-items: center; padding: 2px; margin: -2px 0; border-radius: 5px; font-size: 15px; line-height: 1; text-decoration: none; }
+  .yt:hover, .yt:focus-visible { background: rgba(255,255,255,.1); outline: none; }
+  .yt.ara { opacity: .5; }
+  svg.ikon { display: inline-block; width: auto; flex: none; overflow: visible; }
+  .satir .ad .ikon { margin-right: 2px; }
+  .satir .sure { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .satir .cubuk { grid-column: 1 / -1; height: 4px; border-radius: 4px; background: rgba(255,255,255,.06); overflow: hidden; }
+  .satir .cubuk i { display: block; height: 100%; border-radius: 4px; }
+  details.kanal { border-top: 1px solid rgba(255,255,255,.06); }
+  details.kanal:first-child { border-top: 0; }
+  details.kanal > summary { list-style: none; cursor: pointer; }
+  details.kanal > summary::-webkit-details-marker { display: none; }
+  details.kanal > summary .satir { border-top: 0; }
+  details.kanal > summary .ad::before { content: '▸ '; color: var(--sub); }
+  details.kanal[open] > summary .ad::before { content: '▾ '; }
+  details.kanal .alt-liste { padding: 0 0 8px 18px; }
+  details.kanal .alt-liste .satir { padding: 5px 4px; }
+  details.kanal .alt-liste .ad { font-weight: 500; font-size: 13px; }
+  .oturum { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 4px; border-top: 1px solid rgba(255,255,255,.06); font-size: 13px; }
+  .oturum:first-child { border-top: 0; }
+  .oturum .saat { color: var(--sub); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+  .oturum .ne { min-width: 0; }
+  .oturum .ne b { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .oturum .ne b > span:not(.metin) { flex: none; }
+  .oturum .ne small { color: var(--sub); }
+  .oturum .sure { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .canli-rozet { flex: none; display: inline-block; font-size: 10px; font-weight: 800; color: #07070d; background: var(--accent2); border-radius: 999px; padding: 1px 6px; vertical-align: middle; }
+  .pasif-rozet { display: inline-block; font-size: 10px; font-weight: 800; color: #d8d8e4; background: #4a4a5c; border-radius: 999px; padding: 1px 6px; vertical-align: middle; }
+  .bos { color: var(--sub); font-size: 13.5px; padding: 18px 4px; text-align: center; }
+  .ipucu { position: fixed; z-index: 50; pointer-events: none; max-width: 260px; padding: 8px 10px; border-radius: 10px; font-size: 12px;
+    background: rgba(20,20,32,.96); border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+  .not { font-size: 11.5px; color: var(--faint); margin-top: 16px; text-align: center; }
+  .yukleniyor { opacity: .55; transition: opacity .2s; }
+  /* Sade görünüm: üstte "şu an", altta seçili gün; ayrıntılı geçmiş düğmenin arkasında */
+  .bolum { margin-bottom: 18px; }
+  .bolum-baslik { display: flex; align-items: baseline; gap: 10px; font-size: 13px; font-weight: 800; color: var(--sub); text-transform: uppercase; letter-spacing: .07em; margin: 0 2px 10px; }
+  .bolum-baslik .ek { text-transform: none; letter-spacing: 0; font-weight: 600; font-size: 12.5px; }
+  .tv-izgara { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .tv-izgara { grid-template-columns: 1fr 1fr; } }
+  .tv-kart { padding: 16px; position: relative; overflow: hidden; }
+  .tv-kart::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--vurgu, transparent); }
+  .tv-kart .tv-ust { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .tv-kart .tv-ad { font-size: 16px; font-weight: 800; flex: 1; }
+  .hap { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--sub); white-space: nowrap; }
+  .hap.acik { background: rgba(88,201,251,.18); color: #9fe0ff; }
+  .simdi-ne { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; min-width: 0; }
+  .simdi-ne .metin { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .simdi-alt { font-size: 13px; color: var(--sub); margin-top: 4px; }
+  .ilerleme { height: 5px; border-radius: 5px; background: rgba(255,255,255,.08); overflow: hidden; margin-top: 10px; }
+  .ilerleme i { display: block; height: 100%; border-radius: 5px; background: var(--vurgu, var(--accent)); }
+  .simdi-dip { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--sub); margin-top: 8px; }
+  .kapali-ne { font-size: 17px; font-weight: 700; color: var(--sub); }
+  .bugun-toplam { display: flex; align-items: baseline; gap: 8px; }
+  .bugun-toplam b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+  .bugun-toplam span { font-size: 13px; color: var(--sub); }
+  .kat-baslik { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; margin: 14px 0 2px; }
+  .kat-baslik .sure { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .ogeler .satir { padding: 6px 4px 6px 17px; }
+  .ogeler.duz .satir { padding-left: 4px; }
+  .satir .ad .zaman { flex: none; min-width: 40px; font-size: 12px; font-weight: 600; color: var(--sub); font-variant-numeric: tabular-nums; }
+  .ogeler.duz .prog { padding-left: 76px; }
+  .ogeler .satir .ad { font-weight: 500; font-size: 13px; }
+  .ogeler .prog { font-size: 12px; color: var(--sub); padding: 0 4px 6px 17px; margin-top: -2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gun-ust { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .gun-ust .bolum-baslik { margin: 0 2px; flex: 1; }
+  .gun-ust .tarih .etiket { min-width: 130px; }
+  /* Saatlik grafik (telefonların "ekran süresi" grafiği gibi): 00–24, sütun = o saatte kaç dk; renkli = izlendi,
+     gri soluk = açık ama oynayan yok (duraklatılmış / bekleme) */
+  .sg { margin: 14px 0 2px; }
+  .sg-alan { position: relative; height: 120px; display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; align-items: stretch;
+    border-bottom: 1px solid rgba(255,255,255,.2); }
+  .sg-cizgi { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,.1); pointer-events: none; }
+  .sg-cizgi span { position: absolute; right: 0; top: -15px; font-size: 10px; color: var(--sub); }
+  .sg-sutun { display: flex; flex-direction: column-reverse; cursor: pointer; border-radius: 3px 3px 0 0; overflow: hidden; min-width: 0; }
+  .sg-sutun:hover { background: rgba(255,255,255,.05); }
+  .sg-sutun i { display: block; flex: none; width: 100%; }
+  .sg-eksen { position: relative; height: 18px; font-size: 10.5px; color: var(--sub); }
+  .sg-eksen span { position: absolute; top: 3px; transform: translateX(-50%); }
+  .sg-eksen span:first-child { transform: none; }
+  .sg-lejant { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--sub); margin-top: 4px; }
+  .sg-lejant span { display: inline-flex; align-items: center; gap: 5px; }
+  .bugun-ozet { font-size: 12.5px; color: var(--sub); margin-top: 2px; }
+  .liste-ayar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+  .sira-secim { margin: 0; }
+  .sira-secim button { font-size: 12.5px; padding: 6px 12px; }
+  .daha { font-size: 12px; color: var(--sub); padding: 4px 0 0 17px; cursor: pointer; }
+  .gecmis-dugme { appearance: none; display: block; width: 100%; margin: 6px 0 14px; padding: 13px; border-radius: var(--r-md, 14px); border: 1px solid var(--glass-border);
+    background: var(--lg-surface); color: var(--text); font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="kap">
+  <header class="ust">
+    <a class="geri" href="/" aria-label="Kumandaya dön">‹ Kumanda</a>
+    <h1>TV'ler</h1>
+    <a class="geri" href="/engel" aria-label="Engeller ve kilit">🔒 Engeller</a>
+  </header>
+
+  <section class="bolum" aria-label="Şu an">
+    <h2 class="bolum-baslik">Şu an <span class="ek" id="simdiSaat"></span></h2>
+    <div class="tv-izgara" id="simdi"></div>
+  </section>
+
+  <section class="bolum" aria-label="Gün">
+    <div class="gun-ust">
+      <h2 class="bolum-baslik" id="gunBaslik">Bugün</h2>
+      <div class="tarih">
+        <button type="button" id="gunOnceki" aria-label="Önceki gün">‹</button>
+        <div class="etiket" id="gunEtiket">—</div>
+        <button type="button" id="gunSonraki" aria-label="Sonraki gün">›</button>
+        <button type="button" class="bugun" id="gunBugun" hidden>Bugün</button>
+      </div>
+    </div>
+    <div class="liste-ayar">
+      <div class="secim sira-secim" id="siraSecim" role="radiogroup" aria-label="Liste sırası">
+        <button type="button" data-sira="yeni">En yeni → en eski</button>
+        <button type="button" data-sira="uzun">En uzun → en kısa</button>
+      </div>
+      <div class="secim sira-secim"><button type="button" id="grupDugme" aria-pressed="false">Gruplu</button></div>
+    </div>
+    <div class="tv-izgara" id="bugun"></div>
+  </section>
+
+  <button type="button" class="gecmis-dugme" id="gecmisAc" aria-expanded="false">📊 Geçmiş — gün · hafta · ay</button>
+  <div id="gecmis" hidden>
+    <div class="denetim">
+      <div class="secim" id="tvSecim" role="tablist" aria-label="TV"></div>
+      <div class="secim" id="aralikSecim" role="tablist" aria-label="Aralık">
+        <button type="button" data-aralik="gun" class="secik">Gün</button>
+        <button type="button" data-aralik="hafta">Hafta</button>
+        <button type="button" data-aralik="ay">Ay</button>
+      </div>
+      <div class="tarih">
+        <button type="button" id="onceki" aria-label="Önceki">‹</button>
+        <div class="etiket" id="tarihEtiket">—</div>
+        <button type="button" id="sonraki" aria-label="Sonraki">›</button>
+        <button type="button" class="bugun" id="bugunBtn">Bugün</button>
+      </div>
+    </div>
+
+    <main class="izgara" id="icerik">
+      <section class="kart glass">
+        <h2 id="ozetBaslik">Özet</h2>
+        <div class="ozetler" id="ozetler"></div>
+        <div class="serit" id="kaynakSerit"></div>
+        <div class="lejant" id="kaynakLejant"></div>
+      </section>
+
+      <section class="kart glass" id="zamanKart">
+        <h2 id="zamanBaslik">Zaman çizelgesi</h2>
+        <div id="zamanCizelge"></div>
+      </section>
+
+      <section class="kart glass yarim">
+        <h2>Canlı TV · kanal ve program</h2>
+        <div class="liste" id="kanalListe"></div>
+      </section>
+
+      <section class="kart glass yarim">
+        <h2>Uygulamalar · ne izlendi</h2>
+        <div class="liste" id="icerikListe"></div>
+      </section>
+
+      <section class="kart glass yarim">
+        <h2>Günün saatlerine göre</h2>
+        <div id="saatDagilim"></div>
+      </section>
+
+      <section class="kart glass yarim">
+        <h2>TV'ler</h2>
+        <div class="liste" id="tvListe"></div>
+      </section>
+
+      <section class="kart glass">
+        <h2>Oturumlar</h2>
+        <div class="liste" id="oturumListe"></div>
+      </section>
+    </main>
+  </div>
+  <p class="not">Kayıt evdeki ajanda tutulur. Apple TV'de oynayan içerik, TV Apple TV girişindeyken okunur; duraklatılmış oynatma izleme süresine katılmaz (⏸).</p>
+</div>
+<div class="ipucu" id="ipucu" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/i18n.js"></script>
+<script src="/saat.js"></script>
+<script src="/izleme.js"></script>
+</body>
+</html>
